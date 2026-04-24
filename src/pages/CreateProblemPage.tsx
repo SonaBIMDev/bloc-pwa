@@ -33,7 +33,7 @@ export default function CreateProblemPage() {
   const [name, setName] = useState("");
   const [grade, setGrade] = useState<ProblemGradeColor>("bleu");
   const [description, setDescription] = useState("");
-  const [selectedType, setSelectedType] = useState<HoldType>("hand");
+  const [selectedType, setSelectedType] = useState<HoldType>("inter");
   const [imageUrl, setImageUrl] = useState<string>("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [holds, setHolds] = useState<HoldPoint[]>([]);
