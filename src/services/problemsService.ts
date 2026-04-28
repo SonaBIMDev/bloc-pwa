@@ -10,6 +10,7 @@ interface CreateProblemInput {
   grade: ProblemGradeColor;
   description: string;
   imageUrl: string;
+  authorPhotoURL?: string;
   holds: HoldPoint[];
 }
 
@@ -18,6 +19,7 @@ export async function createProblem(input: CreateProblemInput) {
     wallId: input.wallId,
     authorId: input.authorId,
     authorName: input.authorName,
+    authorPhotoURL: input.authorPhotoURL || "",
     name: input.name,
     grade: input.grade,
     description: input.description,

@@ -1,4 +1,4 @@
-export type HoldType = "start" | "inter" | "top";
+export type HoldType = "start" | "inter" | "top" | "hand" | "foot";
 
 export type ProblemGradeColor =
   | "blanc"
@@ -15,11 +15,21 @@ export interface HoldPoint {
   type: HoldType;
 }
 
+export interface Wall {
+  id?: string;
+  name: string;
+  createdBy: string;
+  createdByName: string;
+  createdByPhotoURL?: string;
+  createdAt: number;
+}
+
 export interface Problem {
   id?: string;
   wallId: string;
   authorId: string;
   authorName: string;
+  authorPhotoURL?: string;
   name: string;
   grade: ProblemGradeColor;
   description?: string;
@@ -35,6 +45,7 @@ export interface ProblemComment {
   problemId: string;
   authorId: string;
   authorName: string;
+  authorPhotoURL?: string;
   text: string;
   createdAt: number;
 }

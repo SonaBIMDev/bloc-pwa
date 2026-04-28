@@ -110,6 +110,7 @@ export default function CreateProblemPage() {
         wallId,
         authorId: user.uid,
         authorName: user.displayName || user.email || "Utilisateur",
+        authorPhotoURL: user.photoURL || "",
         name: name.trim(),
         grade,
         description: description.trim(),

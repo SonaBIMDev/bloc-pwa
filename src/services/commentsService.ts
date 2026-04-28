@@ -6,6 +6,7 @@ interface CreateCommentInput {
   problemId: string;
   authorId: string;
   authorName: string;
+  authorPhotoURL?: string;
   text: string;
 }
 
@@ -14,6 +15,7 @@ export async function createComment(input: CreateCommentInput) {
     problemId: input.problemId,
     authorId: input.authorId,
     authorName: input.authorName,
+    authorPhotoURL: input.authorPhotoURL || "",
     text: input.text,
     createdAt: Date.now()
   });

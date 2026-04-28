@@ -2,146 +2,87 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getProblemById, deleteProblem } from "../services/problemsService";
 import { createComment, getCommentsByProblemId } from "../services/commentsService";
-import {
-  createRating,
-  getRatingsByProblemId,
-  hasUserAlreadyRated
-} from "../services/ratingsService";
 import { requireGoogleUser } from "../services/authService";
 import type {
   HoldType,
   Problem,
   ProblemComment,
-  ProblemGradeColor,
-  ProblemRating
+  ProblemGradeColor
 } from "../types";
 
-const gradeColors: ProblemGradeColor[] = [
-  "blanc",
-  "vert",
-  "bleu",
-  "rose",
-  "orange",
-  "jaune",
-  "noir"
-];
-
-
-const colorMap: Record<ProblemGradeColor, string> = {
+const gradeColorMap: Record<ProblemGradeColor, string> = {
   blanc: "#f8fafc",
   vert: "#22c55e",
   bleu: "#3b82f6",
   rose: "#ec4899",
   orange: "#f97316",
   jaune: "#eab308",
-  noir: "#0f172a"
+  noir: "#ffffff"
 };
 
 export default function ProblemDetailPage() {
   const { problemId } = useParams();
   const navigate = useNavigate();
-  const [isDeleting, setIsDeleting] = useState(false);
+
   const [problem, setProblem] = useState<Problem | null>(null);
   const [comments, setComments] = useState<ProblemComment[]>([]);
-  const [ratings, setRatings] = useState<ProblemRating[]>([]);
   const [commentText, setCommentText] = useState("");
-  const [proposedGrade, setProposedGrade] = useState<ProblemGradeColor>("bleu");
-  const [hasRated, setHasRated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
-  const [isSubmittingRating, setIsSubmittingRating] = useState(false);
-  const [error, setError] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
   const [currentUserId, setCurrentUserId] = useState("");
+  const [error, setError] = useState("");
 
-    const holdColor = useMemo<Record<HoldType, string>>(
+  const holdColor = useMemo<Record<HoldType, string>>(
     () => ({
-        start: "#22c55e",
-        inter: "#38bdf8",
-        top: "#ef4444"
+      start: "#22c55e",
+      inter: "#38bdf8",
+      hand: "#38bdf8",
+      foot: "#38bdf8",
+      top: "#ef4444"
     }),
     []
-    );
-    
-    const canDeleteProblem = !!problem && !!currentUserId && problem.authorId === currentUserId;
-  const ratingSummary = useMemo(() => {
-    if (ratings.length === 0) return null;
+  );
 
-    const counts: Record<string, number> = {};
-    for (const rating of ratings) {
-      counts[rating.proposedGrade] = (counts[rating.proposedGrade] || 0) + 1;
-    }
-
-    let topGrade = "";
-    let topCount = 0;
-
-    for (const [grade, count] of Object.entries(counts)) {
-      if (count > topCount) {
-        topGrade = grade;
-        topCount = count;
-      }
-    }
-
-    return {
-      count: ratings.length,
-      topGrade
-    };
-  }, [ratings]);
+  const canDeleteProblem =
+    !!problem && !!currentUserId && problem.authorId === currentUserId;
 
   async function loadComments(currentProblemId: string) {
     const data = await getCommentsByProblemId(currentProblemId);
     setComments(data);
   }
 
-  async function loadRatings(currentProblemId: string) {
-    const data = await getRatingsByProblemId(currentProblemId);
-    setRatings(data);
-  }
-
-  async function checkIfCurrentUserRated(currentProblemId: string) {
-  const user = await requireGoogleUser();
-
-  if (!user) {
-    setHasRated(false);
-    return;
-  }
-
-  const alreadyRated = await hasUserAlreadyRated(currentProblemId, user.uid);
-  setHasRated(alreadyRated);
-}
-
   useEffect(() => {
-  async function loadProblem() {
-    try {
-      if (!problemId) {
-        setError("Bloc introuvable.");
-        return;
-      }
+    async function loadProblem() {
+      try {
+        if (!problemId) {
+          setError("Bloc introuvable.");
+          return;
+        }
 
-      const data = await getProblemById(problemId);
+        const data = await getProblemById(problemId);
 
-      if (!data) {
-        setError("Bloc non trouvé.");
-        return;
-      }
+        if (!data) {
+          setError("Bloc non trouvé.");
+          return;
+        }
 
-      setProblem(data);
+        setProblem(data);
 
-      const user = await requireGoogleUser();
+        const user = await requireGoogleUser();
         setCurrentUserId(user?.uid || "");
 
-      await loadComments(problemId);
-      await loadRatings(problemId);
-      await checkIfCurrentUserRated(problemId);
-    } catch (err) {
-      console.error(err);
-      setError("Erreur lors du chargement du bloc.");
-    } finally {
-      setIsLoading(false);
+        await loadComments(problemId);
+      } catch (err) {
+        console.error(err);
+        setError("Erreur lors du chargement du bloc.");
+      } finally {
+        setIsLoading(false);
+      }
     }
-  }
 
-  loadProblem();
-}, [problemId]);
+    loadProblem();
+  }, [problemId]);
 
   async function handleAddComment() {
     try {
@@ -156,17 +97,18 @@ export default function ProblemDetailPage() {
 
       const user = await requireGoogleUser();
 
-        if (!user) {
+      if (!user) {
         alert("Tu dois te connecter avec Google pour commenter.");
         return;
-        }
+      }
 
       await createComment({
         problemId,
         authorId: user.uid,
         authorName: user.displayName || user.email || "Utilisateur",
+        authorPhotoURL: user.photoURL || "",
         text: commentText.trim()
-        });
+      });
 
       setCommentText("");
       await loadComments(problemId);
@@ -178,72 +120,36 @@ export default function ProblemDetailPage() {
     }
   }
 
-  async function handleAddRating() {
+  async function handleDeleteProblem() {
     try {
-      if (!problemId) return;
+      if (!problemId || !problem?.wallId) return;
 
-      if (hasRated) {
-        alert("Tu as déjà proposé une cotation pour ce bloc.");
+      if (!canDeleteProblem) {
+        alert("Tu n'es pas autorisé à supprimer ce bloc.");
         return;
       }
 
-      setIsSubmittingRating(true);
+      const confirmed = window.confirm(
+        "Es-tu sûr de vouloir supprimer ce bloc ?"
+      );
 
-      const user = await requireGoogleUser();
-
-        if (!user) {
-        alert("Tu dois te connecter avec Google pour proposer une cotation.");
+      if (!confirmed) {
         return;
-        }
+      }
 
-      await createRating({
-        problemId,
-        authorId: user.uid,
-        proposedGrade
-      });
+      setIsDeleting(true);
 
-      await loadRatings(problemId);
-      await checkIfCurrentUserRated(problemId);
+      await deleteProblem(problemId);
 
-      alert("Proposition de cotation enregistrée.");
+      alert("Bloc supprimé.");
+      navigate(`/walls/${problem.wallId}`);
     } catch (err) {
       console.error(err);
-      alert("Erreur lors de l'enregistrement de la cotation.");
+      alert("Erreur lors de la suppression du bloc.");
     } finally {
-      setIsSubmittingRating(false);
+      setIsDeleting(false);
     }
   }
-
-  async function handleDeleteProblem() {
-  try {
-    if (!canDeleteProblem) {
-        alert("Tu n'es pas autorisé à supprimer ce bloc.");
-        return;
-    }
-
-    if (!problemId || !problem?.wallId) return;
-
-    const confirmed = window.confirm(
-      "Es-tu sûr de vouloir supprimer ce bloc ?"
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
-    setIsDeleting(true);
-
-    await deleteProblem(problemId);
-
-    alert("Bloc supprimé.");
-    navigate(`/walls/${problem.wallId}`);
-  } catch (err) {
-    console.error(err);
-    alert("Erreur lors de la suppression du bloc.");
-  } finally {
-    setIsDeleting(false);
-  }
-}
 
   if (isLoading) {
     return <p>Chargement du bloc...</p>;
@@ -259,30 +165,52 @@ export default function ProblemDetailPage() {
 
   return (
     <div>
-      <h1>{problem.name}</h1>
-    <p>
-      <strong>Créé par :</strong> {problem.authorName || "Auteur inconnu"}
-    </p>
+      <h1
+        style={{
+          color: gradeColorMap[problem.grade] || "#ffffff"
+        }}
+      >
+        {problem.name}
+      </h1>
 
-        {canDeleteProblem && (
-  <div style={{ marginTop: 12, marginBottom: 16 }}>
-    <button
-      onClick={handleDeleteProblem}
-      disabled={isDeleting}
-      style={{
-        padding: "10px 14px",
-        borderRadius: 10,
-        border: "none",
-        background: isDeleting ? "#64748b" : "#ef4444",
-        color: "white",
-        fontWeight: 700,
-        cursor: isDeleting ? "not-allowed" : "pointer"
-      }}
-    >
-      {isDeleting ? "Suppression..." : "Supprimer le bloc"}
-    </button>
-  </div>
-)}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+        {problem.authorPhotoURL && (
+          <img
+            src={problem.authorPhotoURL}
+            alt={problem.authorName || "Auteur"}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              objectFit: "cover"
+            }}
+          />
+        )}
+
+        <p style={{ margin: 0 }}>
+          <strong>Créé par :</strong> {problem.authorName || "Auteur inconnu"}
+        </p>
+      </div>
+
+      {canDeleteProblem && (
+        <div style={{ marginTop: 12, marginBottom: 16 }}>
+          <button
+            onClick={handleDeleteProblem}
+            disabled={isDeleting}
+            style={{
+              padding: "10px 14px",
+              borderRadius: 10,
+              border: "none",
+              background: isDeleting ? "#64748b" : "#ef4444",
+              color: "white",
+              fontWeight: 700,
+              cursor: isDeleting ? "not-allowed" : "pointer"
+            }}
+          >
+            {isDeleting ? "Suppression..." : "Supprimer le bloc"}
+          </button>
+        </div>
+      )}
 
       <p>
         <strong>Cotation proposée par le créateur :</strong> {problem.grade}
@@ -337,80 +265,6 @@ export default function ProblemDetailPage() {
       </div>
 
       <section style={{ marginTop: 32 }}>
-        <h2>Propositions de cotation</h2>
-
-        {ratingSummary ? (
-          <div style={{ marginBottom: 16 }}>
-            <p>
-              <strong>Nombre de votes :</strong> {ratingSummary.count}
-            </p>
-            <p>
-              <strong>Tendance actuelle :</strong> {ratingSummary.topGrade}
-            </p>
-          </div>
-        ) : (
-          <p>Aucune proposition de cotation pour le moment.</p>
-        )}
-
-        <div style={{ display: "grid", gap: 12, maxWidth: 700 }}>
-          <label>
-            <div style={{ marginBottom: 8 }}>Ta proposition :</div>
-            <select
-              value={proposedGrade}
-              onChange={(e) => setProposedGrade(e.target.value as ProblemGradeColor)}
-              disabled={hasRated || isSubmittingRating}
-              style={{ padding: 12, borderRadius: 8, border: "none", minWidth: 220 }}
-            >
-              {gradeColors.map((grade) => (
-                <option key={grade} value={grade}>
-                  {grade}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {gradeColors.map((grade) => (
-              <div
-                key={grade}
-                style={{
-                  padding: "6px 10px",
-                  borderRadius: 999,
-                  background: colorMap[grade],
-                  color: grade === "blanc" || grade === "jaune" ? "#111" : "white",
-                  border: grade === "blanc" ? "1px solid #cbd5e1" : "none",
-                  fontWeight: 700
-                }}
-              >
-                {grade}
-              </div>
-            ))}
-          </div>
-
-          <button
-            onClick={handleAddRating}
-            disabled={hasRated || isSubmittingRating}
-            style={{
-              width: "fit-content",
-              padding: "12px 16px",
-              borderRadius: 10,
-              border: "none",
-              background: hasRated ? "#64748b" : "#a78bfa",
-              color: hasRated ? "white" : "#2e1065",
-              fontWeight: 700,
-              cursor: hasRated || isSubmittingRating ? "not-allowed" : "pointer"
-            }}
-          >
-            {hasRated
-              ? "Cotation déjà proposée"
-              : isSubmittingRating
-              ? "Envoi..."
-              : "Proposer une cotation"}
-          </button>
-        </div>
-      </section>
-
-      <section style={{ marginTop: 32 }}>
         <h2>Commentaires</h2>
 
         <div style={{ display: "grid", gap: 12, maxWidth: 700 }}>
@@ -448,17 +302,40 @@ export default function ProblemDetailPage() {
               <div
                 key={comment.id}
                 style={{
-                    background: "#1e293b",
-                    borderRadius: 12,
-                    padding: 12,
-                    maxWidth: 700
+                  background: "#1e293b",
+                  borderRadius: 12,
+                  padding: 12,
+                  maxWidth: 700
                 }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 8
+                  }}
                 >
-                <p style={{ margin: "0 0 8px 0", fontSize: 14, opacity: 0.8 }}>
+                  {comment.authorPhotoURL && (
+                    <img
+                      src={comment.authorPhotoURL}
+                      alt={comment.authorName || "Utilisateur"}
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: "50%",
+                        objectFit: "cover"
+                      }}
+                    />
+                  )}
+
+                  <p style={{ margin: 0, fontSize: 14, opacity: 0.8 }}>
                     {comment.authorName || "Utilisateur"}
-                </p>
-                <p style={{ margin: 0 }}>{comment.text}</p>
+                  </p>
                 </div>
+
+                <p style={{ margin: 0 }}>{comment.text}</p>
+              </div>
             ))
           )}
         </div>

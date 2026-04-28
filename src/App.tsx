@@ -57,46 +57,61 @@ export default function App() {
 
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           {isAuthLoading ? (
-            <span style={{ fontSize: 14, opacity: 0.8 }}>Chargement...</span>
-          ) : user ? (
-            <>
-              <span style={{ fontSize: 14, opacity: 0.9 }}>
-                Connecté : {user.displayName || user.email || "Utilisateur"}
-              </span>
-              <button
-                type="button"
-                onClick={handleLogout}
-                style={{
-                  padding: "10px 14px",
-                  borderRadius: 10,
-                  border: "none",
-                  background: "#334155",
-                  color: "white",
-                  fontWeight: 700,
-                  cursor: "pointer"
-                }}
-              >
-                Déconnexion
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              onClick={handleGoogleSignIn}
-              disabled={isSigningIn}
-              style={{
-                padding: "10px 14px",
-                borderRadius: 10,
-                border: "none",
-                background: "#38bdf8",
-                color: "#082f49",
-                fontWeight: 700,
-                cursor: isSigningIn ? "not-allowed" : "pointer"
-              }}
-            >
-              {isSigningIn ? "Connexion..." : "Se connecter avec Google"}
-            </button>
-          )}
+  <span style={{ fontSize: 14, opacity: 0.8 }}>Chargement...</span>
+) : user ? (
+  <>
+    {user.photoURL && (
+      <img
+        src={user.photoURL}
+        alt={user.displayName || "Avatar"}
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: "50%",
+          objectFit: "cover",
+          border: "2px solid rgba(255,255,255,0.2)"
+        }}
+      />
+    )}
+
+    <span style={{ fontSize: 14, opacity: 0.9 }}>
+      Connecté : {user.displayName || user.email || "Utilisateur"}
+    </span>
+
+    <button
+      type="button"
+      onClick={handleLogout}
+      style={{
+        padding: "10px 14px",
+        borderRadius: 10,
+        border: "none",
+        background: "#334155",
+        color: "white",
+        fontWeight: 700,
+        cursor: "pointer"
+      }}
+    >
+      Déconnexion
+    </button>
+  </>
+) : (
+  <button
+    type="button"
+    onClick={handleGoogleSignIn}
+    disabled={isSigningIn}
+    style={{
+      padding: "10px 14px",
+      borderRadius: 10,
+      border: "none",
+      background: "#38bdf8",
+      color: "#082f49",
+      fontWeight: 700,
+      cursor: isSigningIn ? "not-allowed" : "pointer"
+    }}
+  >
+    {isSigningIn ? "Connexion..." : "Se connecter avec Google"}
+  </button>
+)}
         </div>
       </header>
 

@@ -1,18 +1,59 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { getWalls } from "../services/wallsService";
+import type { Wall } from "../types";
 
 export default function HomePage() {
-  const demoWalls = [
-    { id: "wall-1", name: "Mur Dévers Principal" },
-    { id: "wall-2", name: "Mur Vertical Débutant" }
-  ];
+  const [walls, setWalls] = useState<Wall[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function loadWalls() {
+      try {
+        const data = await getWalls();
+        setWalls(data);
+      } catch (err) {
+        console.error(err);
+        setError("Erreur lors du chargement des salles.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadWalls();
+  }, []);
 
   return (
     <div>
-      <h1>Blocs partagés</h1>
-      <p>Choisis un mur pour voir ou créer des blocs.</p>
+      <h1>Salles de Bloc</h1>
+      <p>Choisi un lieu pour pouvoir créer des blocs.</p>
+
+      <Link
+        to="/walls/create"
+        style={{
+          display: "inline-block",
+          padding: "12px 16px",
+          borderRadius: 10,
+          background: "#22c55e",
+          color: "#052e16",
+          fontWeight: 700,
+          textDecoration: "none",
+          marginBottom: 20
+        }}
+      >
+        Créer une salle
+      </Link>
+
+      {isLoading && <p>Chargement des salles...</p>}
+      {error && <p>{error}</p>}
+
+      {!isLoading && !error && walls.length === 0 && (
+        <p>Aucune salle de bloc pour le moment.</p>
+      )}
 
       <div style={{ display: "grid", gap: 12 }}>
-        {demoWalls.map((wall) => (
+        {walls.map((wall) => (
           <Link
             key={wall.id}
             to={`/walls/${wall.id}`}
