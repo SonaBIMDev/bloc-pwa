@@ -10,7 +10,7 @@ export default defineConfig({
       includeAssets: ["favicon.svg"],
       manifest: {
         name: "FreeBloc",
-        short_name: "Bloc",
+        short_name: "FreeBloc",
         description: "Partage de blocs créés en salle",
         theme_color: "#111827",
         background_color: "#111827",

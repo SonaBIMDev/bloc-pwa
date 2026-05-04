@@ -3,17 +3,26 @@ import { Link } from "react-router-dom";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { auth } from "../firebase";
 import { getWalls } from "../services/wallsService";
+import { isCurrentUserAdmin } from "../services/authService";
 import type { Wall } from "../types";
 
 export default function HomePage() {
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [walls, setWalls] = useState<Wall[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (nextUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (nextUser) => {
       setUser(nextUser);
+
+      if (nextUser) {
+        const admin = await isCurrentUserAdmin();
+        setIsAdmin(admin);
+      } else {
+        setIsAdmin(false);
+      }
     });
 
     return () => unsubscribe();
@@ -40,7 +49,7 @@ export default function HomePage() {
       <h1>Salles de Bloc</h1>
       <p>Choisi un lieu pour pouvoir créer des blocs.</p>
 
-      {user ? (
+      {isAdmin && (
         <Link
           to="/walls/create"
           style={{
@@ -57,8 +66,6 @@ export default function HomePage() {
         >
           Créer une salle
         </Link>
-      ) : (
-        <p style={{ opacity: 0.8 }}>Connecte-toi pour créer une salle.</p>
       )}
 
       {isLoading && <p>Chargement des salles...</p>}
