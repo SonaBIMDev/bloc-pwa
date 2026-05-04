@@ -39,10 +39,12 @@ export default function CreateProblemPage() {
   const [holds, setHolds] = useState<HoldPoint[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
-  const holdColor = useMemo<Record<HoldType, string>>(
+const holdColor = useMemo<Record<HoldType, string>>(
   () => ({
     start: "#22c55e",
     inter: "#38bdf8",
+    hand: "#38bdf8",
+    foot: "#38bdf8",
     top: "#ef4444"
   }),
   []
