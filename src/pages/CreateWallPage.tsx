@@ -86,6 +86,9 @@ export default function CreateWallPage() {
           {isSaving ? "Création..." : "Créer la salle"}
         </button>
       </div>
+
+      <div style={{ height: 120 }} />
+      
     </div>
   );
 }
