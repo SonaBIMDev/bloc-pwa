@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { onAuthStateChanged, type User } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
 import { getWalls } from "../services/wallsService";
 import { isCurrentUserAdmin } from "../services/authService";
 import type { Wall } from "../types";
 
 export default function HomePage() {
-  const [user, setUser] = useState<User | null>(null);
+  const [, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [walls, setWalls] = useState<Wall[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -15,7 +15,7 @@ export default function HomePage() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (nextUser) => {
-      setUser(nextUser);
+      setIsLoggedIn(!!nextUser);
 
       if (nextUser) {
         const admin = await isCurrentUserAdmin();
@@ -98,4 +98,4 @@ export default function HomePage() {
       </div>
     </div>
   );
-}
+}pb
