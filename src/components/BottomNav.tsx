@@ -29,19 +29,20 @@ export default function BottomNav() {
 
   return (
     <nav
-      style={{
+        style={{
         position: "fixed",
         bottom: 0,
         left: 0,
         right: 0,
-        height: 68,
+        height: 60,
         background: "#050505",
         borderTop: "1px solid #1f1f1f",
         display: "flex",
         justifyContent: "space-around",
         alignItems: "center",
-        zIndex: 1000
-      }}
+        zIndex: 1000,
+        paddingBottom: "env(safe-area-inset-bottom)"
+    }}
     >
       <button
         type="button"

@@ -287,6 +287,9 @@ const holdColor = useMemo<Record<HoldType, string>>(
           {isSaving ? "Publication..." : "Publier"}
         </button>
       </div>
+
+      <div style={{ height: 120 }} />
     </div>
+    
   );
 }
