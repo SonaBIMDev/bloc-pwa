@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { onAuthStateChanged, type User } from "firebase/auth";
+import { auth } from "../firebase";
 import { getProblemById, deleteProblem } from "../services/problemsService";
 import { createComment, getCommentsByProblemId } from "../services/commentsService";
-import { requireGoogleUser } from "../services/authService";
+import { requireGoogleUser, isCurrentUserAdmin } from "../services/authService";
 import type {
   HoldType,
   Problem,
@@ -24,14 +26,32 @@ export default function ProblemDetailPage() {
   const { problemId } = useParams();
   const navigate = useNavigate();
 
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
   const [problem, setProblem] = useState<Problem | null>(null);
   const [comments, setComments] = useState<ProblemComment[]>([]);
   const [commentText, setCommentText] = useState("");
+
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (nextUser) => {
+      setCurrentUser(nextUser);
+
+      if (nextUser) {
+        const admin = await isCurrentUserAdmin();
+        setIsAdmin(admin);
+      } else {
+        setIsAdmin(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const holdColor = useMemo<Record<HoldType, string>>(
     () => ({
@@ -44,8 +64,12 @@ export default function ProblemDetailPage() {
     []
   );
 
-  const canDeleteProblem =
-    !!problem && !!currentUserId && problem.authorId === currentUserId;
+  const canDeleteProblem = useMemo(() => {
+    if (!problem) return false;
+    if (!currentUser) return false;
+
+    return problem.authorId === currentUser.uid || isAdmin;
+  }, [problem, currentUser, isAdmin]);
 
   async function loadComments(currentProblemId: string) {
     const data = await getCommentsByProblemId(currentProblemId);
@@ -68,10 +92,6 @@ export default function ProblemDetailPage() {
         }
 
         setProblem(data);
-
-        const user = await requireGoogleUser();
-        setCurrentUserId(user?.uid || "");
-
         await loadComments(problemId);
       } catch (err) {
         console.error(err);
@@ -106,7 +126,7 @@ export default function ProblemDetailPage() {
         problemId,
         authorId: user.uid,
         authorName: user.displayName || user.email || "Utilisateur",
-        authorPhotoURL: user.photoURL || "",
+        authorPhotoURL: user.photoURL || user.providerData[0]?.photoURL || "",
         text: commentText.trim()
       });
 
@@ -141,7 +161,6 @@ export default function ProblemDetailPage() {
 
       await deleteProblem(problemId);
 
-      alert("Bloc supprimé.");
       navigate(`/walls/${problem.wallId}`);
     } catch (err) {
       console.error(err);
@@ -178,6 +197,7 @@ export default function ProblemDetailPage() {
           <img
             src={problem.authorPhotoURL}
             alt={problem.authorName || "Auteur"}
+            referrerPolicy="no-referrer"
             style={{
               width: 32,
               height: 32,
@@ -267,32 +287,36 @@ export default function ProblemDetailPage() {
       <section style={{ marginTop: 32 }}>
         <h2>Commentaires</h2>
 
-        <div style={{ display: "grid", gap: 12, maxWidth: 700 }}>
-          <textarea
-            value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-            rows={4}
-            placeholder="Ajouter un commentaire sur ce bloc"
-            style={{ padding: 12, borderRadius: 8, border: "none" }}
-          />
+        {currentUser ? (
+          <div style={{ display: "grid", gap: 12, maxWidth: 700 }}>
+            <textarea
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              rows={4}
+              placeholder="Ajouter un commentaire sur ce bloc"
+              style={{ padding: 12, borderRadius: 8, border: "none" }}
+            />
 
-          <button
-            onClick={handleAddComment}
-            disabled={isSubmittingComment}
-            style={{
-              width: "fit-content",
-              padding: "12px 16px",
-              borderRadius: 10,
-              border: "none",
-              background: isSubmittingComment ? "#64748b" : "#38bdf8",
-              color: "#082f49",
-              fontWeight: 700,
-              cursor: isSubmittingComment ? "not-allowed" : "pointer"
-            }}
-          >
-            {isSubmittingComment ? "Envoi..." : "Ajouter un commentaire"}
-          </button>
-        </div>
+            <button
+              onClick={handleAddComment}
+              disabled={isSubmittingComment}
+              style={{
+                width: "fit-content",
+                padding: "12px 16px",
+                borderRadius: 10,
+                border: "none",
+                background: isSubmittingComment ? "#64748b" : "#38bdf8",
+                color: "#082f49",
+                fontWeight: 700,
+                cursor: isSubmittingComment ? "not-allowed" : "pointer"
+              }}
+            >
+              {isSubmittingComment ? "Envoi..." : "Ajouter un commentaire"}
+            </button>
+          </div>
+        ) : (
+          <p>Connecte-toi pour ajouter un commentaire.</p>
+        )}
 
         <div style={{ display: "grid", gap: 12, marginTop: 20 }}>
           {comments.length === 0 ? (
@@ -320,6 +344,7 @@ export default function ProblemDetailPage() {
                     <img
                       src={comment.authorPhotoURL}
                       alt={comment.authorName || "Utilisateur"}
+                      referrerPolicy="no-referrer"
                       style={{
                         width: 28,
                         height: 28,

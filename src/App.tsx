@@ -1,4 +1,4 @@
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { auth } from "./firebase";
@@ -18,6 +18,8 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  const navigate = useNavigate();
+
   async function handleGoogleSignIn() {
     try {
       setIsSigningIn(true);
@@ -30,14 +32,15 @@ export default function App() {
     }
   }
 
-  async function handleLogout() {
-    try {
-      await logout();
-    } catch (error) {
-      console.error("Erreur déconnexion :", error);
-      alert("Impossible de se déconnecter.");
-    }
+async function handleLogout() {
+  try {
+    await logout();
+    navigate("/");
+  } catch (error) {
+    console.error("Erreur déconnexion :", error);
+    alert("Impossible de se déconnecter.");
   }
+}
 
   return (
     <div style={{ minHeight: "100vh", background: "#0f172a", color: "white" }}>

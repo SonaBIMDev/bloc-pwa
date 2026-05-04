@@ -1,12 +1,23 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { onAuthStateChanged, type User } from "firebase/auth";
+import { auth } from "../firebase";
 import { getWalls } from "../services/wallsService";
 import type { Wall } from "../types";
 
 export default function HomePage() {
+  const [user, setUser] = useState<User | null>(null);
   const [walls, setWalls] = useState<Wall[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (nextUser) => {
+      setUser(nextUser);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     async function loadWalls() {
@@ -29,21 +40,29 @@ export default function HomePage() {
       <h1>Salles de Bloc</h1>
       <p>Choisi un lieu pour pouvoir créer des blocs.</p>
 
-      <Link
-        to="/walls/create"
-        style={{
-          display: "inline-block",
-          padding: "12px 16px",
-          borderRadius: 10,
-          background: "#22c55e",
-          color: "#052e16",
-          fontWeight: 700,
-          textDecoration: "none",
-          marginBottom: 20
-        }}
-      >
-        Créer une salle
-      </Link>
+      {user && (
+        <Link
+          to="/walls/create"
+          style={{
+            display: "inline-block",
+            padding: "12px 16px",
+            borderRadius: 10,
+            background: "#22c55e",
+            color: "#052e16",
+            fontWeight: 700,
+            textDecoration: "none",
+            marginBottom: 20
+          }}
+        >
+          Créer une salle
+        </Link>
+      )}
+
+      {!user && (
+        <p style={{ opacity: 0.8 }}>
+          Connecte-toi pour créer une salle.
+        </p>
+      )}
 
       {isLoading && <p>Chargement des salles...</p>}
       {error && <p>{error}</p>}

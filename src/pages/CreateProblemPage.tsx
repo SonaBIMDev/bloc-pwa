@@ -110,7 +110,7 @@ export default function CreateProblemPage() {
         wallId,
         authorId: user.uid,
         authorName: user.displayName || user.email || "Utilisateur",
-        authorPhotoURL: user.photoURL || "",
+        authorPhotoURL: user.photoURL || user.providerData[0]?.photoURL || "",
         name: name.trim(),
         grade,
         description: description.trim(),
@@ -118,7 +118,6 @@ export default function CreateProblemPage() {
         holds
       });
 
-      alert("Bloc publié avec succès.");
       navigate(`/problems/${problemId}`);
     } catch (error) {
       console.error("Erreur publication bloc :", error);

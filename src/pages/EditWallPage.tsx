@@ -1,26 +1,41 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { onAuthStateChanged, type User } from "firebase/auth";
 import { auth } from "../firebase";
 import { getWallById, updateWall, deleteWall } from "../services/wallsService";
-
-const SUPER_ADMIN_EMAIL = "pierrotnavarra@gmail.com";
+import { isCurrentUserAdmin } from "../services/authService";
 
 export default function EditWallPage() {
   const { wallId } = useParams();
   const navigate = useNavigate();
+
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [name, setName] = useState("");
   const [createdBy, setCreatedBy] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  const currentUser = auth.currentUser;
-  const isSuperAdmin = currentUser?.email === SUPER_ADMIN_EMAIL;
-  const canManage = !!currentUser && (currentUser.uid === createdBy || isSuperAdmin);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (nextUser) => {
+      setCurrentUser(nextUser);
+
+      if (nextUser) {
+        const admin = await isCurrentUserAdmin();
+        setIsAdmin(admin);
+      } else {
+        setIsAdmin(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     async function loadWall() {
       try {
         if (!wallId) return;
+
         const wall = await getWallById(wallId);
         if (!wall) return;
 
@@ -36,13 +51,20 @@ export default function EditWallPage() {
     loadWall();
   }, [wallId]);
 
+  const canManage = useMemo(() => {
+    if (!currentUser) return false;
+    return currentUser.uid === createdBy || isAdmin;
+  }, [currentUser, createdBy, isAdmin]);
+
   async function handleSave() {
     try {
       if (!wallId) return;
+
       if (!canManage) {
         alert("Tu n'es pas autorisé à modifier cette salle.");
         return;
       }
+
       if (!name.trim()) {
         alert("Merci de saisir un nom.");
         return;
@@ -62,6 +84,7 @@ export default function EditWallPage() {
   async function handleDelete() {
     try {
       if (!wallId) return;
+
       if (!canManage) {
         alert("Tu n'es pas autorisé à supprimer cette salle.");
         return;
@@ -82,7 +105,14 @@ export default function EditWallPage() {
   }
 
   if (isLoading) return <p>Chargement...</p>;
-  if (!canManage) return <p>Tu n'es pas autorisé à modifier cette salle.</p>;
+
+  if (!currentUser) {
+    return <p>Tu dois être connecté pour modifier cette salle.</p>;
+  }
+
+  if (!canManage) {
+    return <p>Tu n'es pas autorisé à modifier cette salle.</p>;
+  }
 
   return (
     <div>

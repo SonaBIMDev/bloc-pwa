@@ -3,7 +3,8 @@ import {
   signInWithPopup,
   signOut,
   onAuthStateChanged,
-  type User
+  type User,
+  getIdTokenResult
 } from "firebase/auth";
 import { auth } from "../firebase";
 
@@ -34,4 +35,11 @@ export async function requireGoogleUser() {
 
   const user = await waitForAuthUser();
   return user;
+}
+
+export async function isCurrentUserAdmin() {
+  if (!auth.currentUser) return false;
+
+  const tokenResult = await getIdTokenResult(auth.currentUser, true);
+  return tokenResult.claims.admin === true;
 }

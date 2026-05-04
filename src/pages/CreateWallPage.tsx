@@ -1,12 +1,23 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { onAuthStateChanged, type User } from "firebase/auth";
+import { auth } from "../firebase";
 import { requireGoogleUser } from "../services/authService";
 import { createWall } from "../services/wallsService";
 
 export default function CreateWallPage() {
+  const [user, setUser] = useState<User | null>(null);
   const [name, setName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (nextUser) => {
+      setUser(nextUser);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   async function handleCreate() {
     try {
@@ -15,10 +26,11 @@ export default function CreateWallPage() {
         return;
       }
 
-      const user = await requireGoogleUser();
+      const currentUser = await requireGoogleUser();
 
-      if (!user) {
+      if (!currentUser) {
         alert("Tu dois te connecter avec Google pour créer une salle.");
+        navigate("/");
         return;
       }
 
@@ -26,9 +38,9 @@ export default function CreateWallPage() {
 
       const wallId = await createWall({
         name: name.trim(),
-        createdBy: user.uid,
-        createdByName: user.displayName || user.email || "Utilisateur",
-        createdByPhotoURL: user.photoURL || ""
+        createdBy: currentUser.uid,
+        createdByName: currentUser.displayName || currentUser.email || "Utilisateur",
+        createdByPhotoURL: currentUser.photoURL || currentUser.providerData[0]?.photoURL || ""
       });
 
       navigate(`/walls/${wallId}`);
@@ -38,6 +50,10 @@ export default function CreateWallPage() {
     } finally {
       setIsSaving(false);
     }
+  }
+
+  if (!user) {
+    return <p>Tu dois être connecté pour créer une salle.</p>;
   }
 
   return (
