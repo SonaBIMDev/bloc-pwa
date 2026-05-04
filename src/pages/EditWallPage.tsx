@@ -4,6 +4,7 @@ import { onAuthStateChanged, type User } from "firebase/auth";
 import { auth } from "../firebase";
 import { getWallById, updateWall, deleteWall } from "../services/wallsService";
 import { isCurrentUserAdmin } from "../services/authService";
+import { uploadWallImage } from "../services/uploadService";
 
 export default function EditWallPage() {
   const { wallId } = useParams();
@@ -11,7 +12,13 @@ export default function EditWallPage() {
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+
   const [name, setName] = useState("");
+  const [locationLabel, setLocationLabel] = useState("");
+  const [mapsUrl, setMapsUrl] = useState("");
+  const [photoURL, setPhotoURL] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+
   const [createdBy, setCreatedBy] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -39,7 +46,10 @@ export default function EditWallPage() {
         const wall = await getWallById(wallId);
         if (!wall) return;
 
-        setName(wall.name);
+        setName(wall.name || "");
+        setLocationLabel(wall.locationLabel || "");
+        setMapsUrl(wall.mapsUrl || "");
+        setPhotoURL(wall.photoURL || "");
         setCreatedBy(wall.createdBy);
       } catch (error) {
         console.error(error);
@@ -56,6 +66,14 @@ export default function EditWallPage() {
     return currentUser.uid === createdBy || isAdmin;
   }, [currentUser, createdBy, isAdmin]);
 
+  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setPhotoFile(file);
+    setPhotoURL(URL.createObjectURL(file));
+  }
+
   async function handleSave() {
     try {
       if (!wallId) return;
@@ -71,7 +89,20 @@ export default function EditWallPage() {
       }
 
       setIsSaving(true);
-      await updateWall(wallId, name.trim());
+
+      let finalPhotoURL = photoURL;
+
+      if (photoFile && currentUser) {
+        finalPhotoURL = await uploadWallImage(photoFile, currentUser.uid);
+      }
+
+      await updateWall(wallId, {
+        name: name.trim(),
+        photoURL: finalPhotoURL,
+        locationLabel: locationLabel.trim(),
+        mapsUrl: mapsUrl.trim()
+      });
+
       navigate(`/walls/${wallId}`);
     } catch (error) {
       console.error(error);
@@ -118,15 +149,52 @@ export default function EditWallPage() {
     <div>
       <h1>Modifier la salle</h1>
 
-      <div style={{ display: "grid", gap: 12, maxWidth: 500 }}>
+      <div style={{ display: "grid", gap: 12, maxWidth: 560 }}>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          style={{ padding: 12, borderRadius: 8, border: "none" }}
+          placeholder="Nom de la salle"
+          style={{ padding: 12, borderRadius: 8 }}
         />
 
-        <div style={{ display: "flex", gap: 12 }}>
+        <input
+          type="text"
+          value={locationLabel}
+          onChange={(e) => setLocationLabel(e.target.value)}
+          placeholder="Localisation affichée (ex : Nantes centre)"
+          style={{ padding: 12, borderRadius: 8 }}
+        />
+
+        <input
+          type="text"
+          value={mapsUrl}
+          onChange={(e) => setMapsUrl(e.target.value)}
+          placeholder="Lien Google Maps / Apple Plans / Waze"
+          style={{ padding: 12, borderRadius: 8 }}
+        />
+
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handlePhotoChange}
+        />
+
+        {photoURL && (
+          <img
+            src={photoURL}
+            alt="Photo salle"
+            style={{
+              width: "100%",
+              maxWidth: 420,
+              borderRadius: 10,
+              display: "block",
+              objectFit: "cover"
+            }}
+          />
+        )}
+
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <button
             type="button"
             onClick={handleSave}

@@ -12,3 +12,15 @@ export async function uploadProblemImage(file: File, wallId: string, userId: str
   const downloadURL = await getDownloadURL(storageRef);
   return downloadURL;
 }
+
+export async function uploadWallImage(file: File, userId: string) {
+  const extension = file.name.split(".").pop() || "jpg";
+  const fileName = `${Date.now()}.${extension}`;
+  const filePath = `walls/${userId}/${fileName}`;
+
+  const storageRef = ref(storage, filePath);
+  await uploadBytes(storageRef, file);
+
+  const downloadURL = await getDownloadURL(storageRef);
+  return downloadURL;
+}

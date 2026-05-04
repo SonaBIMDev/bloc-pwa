@@ -17,6 +17,16 @@ interface CreateWallInput {
   createdBy: string;
   createdByName: string;
   createdByPhotoURL?: string;
+  photoURL?: string;
+  locationLabel?: string;
+  mapsUrl?: string;
+}
+
+interface UpdateWallInput {
+  name: string;
+  photoURL?: string;
+  locationLabel?: string;
+  mapsUrl?: string;
 }
 
 export async function createWall(input: CreateWallInput) {
@@ -25,6 +35,9 @@ export async function createWall(input: CreateWallInput) {
     createdBy: input.createdBy,
     createdByName: input.createdByName,
     createdByPhotoURL: input.createdByPhotoURL || "",
+    photoURL: input.photoURL || "",
+    locationLabel: input.locationLabel || "",
+    mapsUrl: input.mapsUrl || "",
     createdAt: Date.now()
   });
 
@@ -54,9 +67,14 @@ export async function getWallById(wallId: string): Promise<Wall | null> {
   };
 }
 
-export async function updateWall(wallId: string, name: string) {
+export async function updateWall(wallId: string, input: UpdateWallInput) {
   const wallRef = doc(db, "walls", wallId);
-  await updateDoc(wallRef, { name });
+  await updateDoc(wallRef, {
+    name: input.name,
+    photoURL: input.photoURL || "",
+    locationLabel: input.locationLabel || "",
+    mapsUrl: input.mapsUrl || ""
+  });
 }
 
 export async function deleteWall(wallId: string) {

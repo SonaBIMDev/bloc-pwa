@@ -40,28 +40,25 @@ export default function HomePage() {
       <h1>Salles de Bloc</h1>
       <p>Choisi un lieu pour pouvoir créer des blocs.</p>
 
-      {user && (
+      {user ? (
         <Link
           to="/walls/create"
           style={{
             display: "inline-block",
-            padding: "12px 16px",
-            borderRadius: 10,
+            padding: "10px 14px",
+            borderRadius: 8,
             background: "#22c55e",
-            color: "#052e16",
+            color: "#04130a",
             fontWeight: 700,
             textDecoration: "none",
-            marginBottom: 20
+            marginBottom: 18,
+            textTransform: "uppercase"
           }}
         >
           Créer une salle
         </Link>
-      )}
-
-      {!user && (
-        <p style={{ opacity: 0.8 }}>
-          Connecte-toi pour créer une salle.
-        </p>
+      ) : (
+        <p style={{ opacity: 0.8 }}>Connecte-toi pour créer une salle.</p>
       )}
 
       {isLoading && <p>Chargement des salles...</p>}
@@ -71,21 +68,24 @@ export default function HomePage() {
         <p>Aucune salle de bloc pour le moment.</p>
       )}
 
-      <div style={{ display: "grid", gap: 12 }}>
+      <div style={{ display: "grid", gap: 10 }}>
         {walls.map((wall) => (
           <Link
             key={wall.id}
             to={`/walls/${wall.id}`}
             style={{
               display: "block",
-              padding: 16,
-              borderRadius: 12,
-              background: "#1e293b",
+              padding: 14,
+              borderRadius: 10,
+              background: "#101010",
               color: "white",
-              textDecoration: "none"
+              textDecoration: "none",
+              border: "1px solid #1f1f1f"
             }}
           >
-            {wall.name}
+            <div style={{ fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.4px" }}>
+              {wall.name}
+            </div>
           </Link>
         ))}
       </div>

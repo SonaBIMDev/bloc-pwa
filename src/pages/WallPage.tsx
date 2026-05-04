@@ -86,9 +86,10 @@ export default function WallPage() {
             <img
               src={wall.createdByPhotoURL}
               alt={wall.createdByName || "Créateur"}
+              referrerPolicy="no-referrer"
               style={{
-                width: 32,
-                height: 32,
+                width: 30,
+                height: 30,
                 borderRadius: "50%",
                 objectFit: "cover"
               }}
@@ -101,18 +102,19 @@ export default function WallPage() {
         </div>
       )}
 
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 20 }}>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18 }}>
         {currentUser ? (
           <Link
             to={`/walls/${wallId}/create`}
             style={{
               display: "inline-block",
-              padding: "12px 16px",
-              borderRadius: 10,
+              padding: "10px 14px",
+              borderRadius: 8,
               background: "#22c55e",
-              color: "#052e16",
+              color: "#04130a",
               fontWeight: 700,
-              textDecoration: "none"
+              textDecoration: "none",
+              textTransform: "uppercase"
             }}
           >
             Créer un bloc
@@ -120,10 +122,11 @@ export default function WallPage() {
         ) : (
           <div
             style={{
-              padding: "12px 16px",
-              borderRadius: 10,
-              background: "#334155",
-              color: "white"
+              padding: "10px 14px",
+              borderRadius: 8,
+              background: "#111111",
+              color: "white",
+              border: "1px solid #222222"
             }}
           >
             Connecte-toi pour créer un bloc
@@ -135,12 +138,13 @@ export default function WallPage() {
             to={`/walls/${wallId}/edit`}
             style={{
               display: "inline-block",
-              padding: "12px 16px",
-              borderRadius: 10,
+              padding: "10px 14px",
+              borderRadius: 8,
               background: "#f59e0b",
               color: "#111827",
               fontWeight: 700,
-              textDecoration: "none"
+              textDecoration: "none",
+              textTransform: "uppercase"
             }}
           >
             Modifier la salle
@@ -149,35 +153,43 @@ export default function WallPage() {
       </div>
 
       {isLoading && <p>Chargement des blocs...</p>}
-
       {error && <p>{error}</p>}
 
       {!isLoading && !error && problems.length === 0 && (
         <p>Aucun bloc publié dans cette salle pour le moment.</p>
       )}
 
-      <div style={{ display: "grid", gap: 16 }}>
+      <div style={{ display: "grid", gap: 10 }}>
         {problems.map((problem) => (
           <Link
             key={problem.id}
             to={`/problems/${problem.id}`}
             style={{
               display: "block",
-              background: "#1e293b",
-              borderRadius: 12,
-              padding: 12,
+              background: "#101010",
+              borderRadius: 10,
+              padding: 10,
               color: "white",
-              textDecoration: "none"
+              textDecoration: "none",
+              border: "1px solid #1f1f1f"
             }}
           >
-            <div style={{ display: "grid", gap: 10 }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "84px 1fr",
+                gap: 10,
+                alignItems: "start"
+              }}
+            >
               <img
                 src={problem.imageUrl}
                 alt={problem.name}
                 style={{
-                  width: "100%",
-                  maxWidth: 420,
-                  borderRadius: 10,
+                  width: 84,
+                  height: 84,
+                  borderRadius: 8,
+                  objectFit: "cover",
                   display: "block"
                 }}
               />
@@ -185,21 +197,22 @@ export default function WallPage() {
               <div>
                 <h2
                   style={{
-                    margin: "0 0 8px 0",
+                    margin: "0 0 6px 0",
                     color: gradeColorMap[problem.grade] || "#ffffff"
                   }}
                 >
                   {problem.name}
                 </h2>
 
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
                   {problem.authorPhotoURL && (
                     <img
                       src={problem.authorPhotoURL}
                       alt={problem.authorName || "Auteur"}
+                      referrerPolicy="no-referrer"
                       style={{
-                        width: 28,
-                        height: 28,
+                        width: 24,
+                        height: 24,
                         borderRadius: "50%",
                         objectFit: "cover"
                       }}
@@ -211,7 +224,7 @@ export default function WallPage() {
                   </p>
                 </div>
 
-                <p style={{ margin: "0 0 6px 0" }}>
+                <p style={{ margin: "0 0 4px 0" }}>
                   <strong>Cotation :</strong> {problem.grade}
                 </p>
 

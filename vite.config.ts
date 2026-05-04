@@ -9,7 +9,7 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg"],
       manifest: {
-        name: "Bloc PWA",
+        name: "FreeBloc",
         short_name: "Bloc",
         description: "Partage de blocs créés en salle",
         theme_color: "#111827",

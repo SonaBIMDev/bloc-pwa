@@ -21,6 +21,9 @@ export interface Wall {
   createdBy: string;
   createdByName: string;
   createdByPhotoURL?: string;
+  photoURL?: string;
+  locationLabel?: string;
+  mapsUrl?: string;
   createdAt: number;
 }
 
