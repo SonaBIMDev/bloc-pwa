@@ -118,7 +118,8 @@ const holdColor = useMemo<Record<HoldType, string>>(
         grade,
         description: description.trim(),
         imageUrl: uploadedImageUrl,
-        holds
+        holds,
+        markerSize
       });
 
       navigate(`/problems/${problemId}`);
