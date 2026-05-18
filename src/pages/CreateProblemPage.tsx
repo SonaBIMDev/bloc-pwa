@@ -4,6 +4,7 @@ import type { HoldPoint, HoldType, ProblemGradeColor } from "../types";
 import { requireGoogleUser } from "../services/authService";
 import { uploadProblemImage } from "../services/uploadService";
 import { createProblem } from "../services/problemsService";
+import { compressImage } from "../utils/imageCompression";
 
 const gradeColors: ProblemGradeColor[] = [
   "blanc",
@@ -51,15 +52,27 @@ const holdColor = useMemo<Record<HoldType, string>>(
   []
 );
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  const file = e.target.files?.[0];
+  if (!file) return;
 
-    const localUrl = URL.createObjectURL(file);
+  try {
+    const compressedFile = await compressImage(file, {
+      maxWidth: 1600,
+      maxHeight: 1600,
+      quality: 0.78,
+      mimeType: "image/jpeg"
+    });
+
+    const localUrl = URL.createObjectURL(compressedFile);
     setImageUrl(localUrl);
-    setImageFile(file);
+    setImageFile(compressedFile);
     setHolds([]);
+  } catch (error) {
+    console.error("Erreur compression image :", error);
+    alert("Impossible de préparer l'image.");
   }
+}
 
   function handleImageClick(e: React.MouseEvent<HTMLDivElement>) {
     if (!imageRef.current) return;

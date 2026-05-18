@@ -5,6 +5,7 @@ import { auth } from "../firebase";
 import { getWallById, updateWall, deleteWall } from "../services/wallsService";
 import { isCurrentUserAdmin } from "../services/authService";
 import { uploadWallImage } from "../services/uploadService";
+import { compressImage } from "../utils/imageCompression";
 
 export default function EditWallPage() {
   const { wallId } = useParams();
@@ -66,13 +67,25 @@ export default function EditWallPage() {
     return currentUser.uid === createdBy || isAdmin;
   }, [currentUser, createdBy, isAdmin]);
 
-  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+  const file = e.target.files?.[0];
+  if (!file) return;
 
-    setPhotoFile(file);
-    setPhotoURL(URL.createObjectURL(file));
+  try {
+    const compressedFile = await compressImage(file, {
+      maxWidth: 1600,
+      maxHeight: 1600,
+      quality: 0.78,
+      mimeType: "image/jpeg"
+    });
+
+    setPhotoFile(compressedFile);
+    setPhotoURL(URL.createObjectURL(compressedFile));
+  } catch (error) {
+    console.error("Erreur compression image salle :", error);
+    alert("Impossible de préparer l'image.");
   }
+}
 
   async function handleSave() {
     try {
