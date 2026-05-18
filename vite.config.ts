@@ -9,7 +9,7 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg"],
       manifest: {
-      name: "❤︎ FreeBloc",
+      name: "FreeBloc",
       short_name: "FreeBloc",
       description: "Partage de blocs créés en salle",
       theme_color: "#000000",
