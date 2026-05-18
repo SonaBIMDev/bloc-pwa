@@ -64,7 +64,7 @@ export default function ProblemDetailPage() {
     []
   );
 
-  const canDeleteProblem = useMemo(() => {
+  const canManageProblem = useMemo(() => {
     if (!problem) return false;
     if (!currentUser) return false;
 
@@ -144,7 +144,7 @@ export default function ProblemDetailPage() {
     try {
       if (!problemId || !problem?.wallId) return;
 
-      if (!canDeleteProblem) {
+      if (!canManageProblem) {
         alert("Tu n'es pas autorisé à supprimer ce bloc.");
         return;
       }
@@ -184,6 +184,71 @@ export default function ProblemDetailPage() {
 
   return (
     <div>
+      <div
+        style={{
+          display: "flex",
+          gap: 10,
+          flexWrap: "wrap",
+          marginBottom: 16
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => navigate(`/walls/${problem.wallId}`)}
+          style={{
+            padding: "10px 14px",
+            borderRadius: 8,
+            border: "1px solid #222222",
+            background: "#111111",
+            color: "white",
+            fontWeight: 700,
+            textTransform: "uppercase",
+            cursor: "pointer"
+          }}
+        >
+          ← Retour
+        </button>
+
+        {canManageProblem && (
+          <>
+            <button
+              type="button"
+              onClick={() => navigate(`/problems/${problem.id}/edit`)}
+              style={{
+                padding: "10px 14px",
+                borderRadius: 8,
+                border: "1px solid #222222",
+                background: "#f59e0b",
+                color: "#111111",
+                fontWeight: 700,
+                textTransform: "uppercase",
+                cursor: "pointer"
+              }}
+            >
+              Modifier
+            </button>
+
+            <button
+              type="button"
+              onClick={handleDeleteProblem}
+              disabled={isDeleting}
+              style={{
+                padding: "10px 14px",
+                borderRadius: 8,
+                border: "none",
+                background: isDeleting ? "#64748b" : "#ef4444",
+                color: "white",
+                fontWeight: 700,
+                textTransform: "uppercase",
+                cursor: isDeleting ? "not-allowed" : "pointer"
+              }}
+            >
+              {isDeleting ? "Suppression..." : "Supprimer"}
+            </button>
+          </>
+        )}
+      </div>
+
       <h1
         style={{
           color: gradeColorMap[problem.grade] || "#ffffff"
@@ -211,26 +276,6 @@ export default function ProblemDetailPage() {
           <strong>Créé par :</strong> {problem.authorName || "Auteur inconnu"}
         </p>
       </div>
-
-      {canDeleteProblem && (
-        <div style={{ marginTop: 12, marginBottom: 16 }}>
-          <button
-            onClick={handleDeleteProblem}
-            disabled={isDeleting}
-            style={{
-              padding: "10px 14px",
-              borderRadius: 10,
-              border: "none",
-              background: isDeleting ? "#64748b" : "#ef4444",
-              color: "white",
-              fontWeight: 700,
-              cursor: isDeleting ? "not-allowed" : "pointer"
-            }}
-          >
-            {isDeleting ? "Suppression..." : "Supprimer le bloc"}
-          </button>
-        </div>
-      )}
 
       <p>
         <strong>Cotation proposée par le créateur :</strong> {problem.grade}
@@ -366,7 +411,7 @@ export default function ProblemDetailPage() {
         </div>
       </section>
 
-       <div style={{ height: 140 }} />
+      <div style={{ height: 140 }} />
     </div>
   );
 }

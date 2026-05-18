@@ -6,6 +6,7 @@ import CreateProblemPage from "./pages/CreateProblemPage";
 import ProblemDetailPage from "./pages/ProblemDetailPage";
 import CreateWallPage from "./pages/CreateWallPage";
 import EditWallPage from "./pages/EditWallPage";
+import EditProblemPage from "./pages/EditProblemPage";
 
 export const router = createBrowserRouter([
   {
@@ -17,7 +18,8 @@ export const router = createBrowserRouter([
       { path: "walls/:wallId/edit", element: <EditWallPage /> },
       { path: "walls/:wallId", element: <WallPage /> },
       { path: "walls/:wallId/create", element: <CreateProblemPage /> },
-      { path: "problems/:problemId", element: <ProblemDetailPage /> }
+      { path: "problems/:problemId", element: <ProblemDetailPage /> },
+      { path: "problems/:problemId/edit", element: <EditProblemPage /> }
     ]
   }
 ]);

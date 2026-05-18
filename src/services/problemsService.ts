@@ -1,4 +1,15 @@
-import { addDoc, collection, doc, getDoc, getDocs, query, where, orderBy, deleteDoc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  updateDoc
+} from "firebase/firestore";
 import { db } from "../firebase";
 import type { HoldPoint, Problem, ProblemGradeColor } from "../types";
 
@@ -11,6 +22,13 @@ interface CreateProblemInput {
   description: string;
   imageUrl: string;
   authorPhotoURL?: string;
+  holds: HoldPoint[];
+}
+
+interface UpdateProblemInput {
+  name: string;
+  grade: ProblemGradeColor;
+  description: string;
   holds: HoldPoint[];
 }
 
@@ -66,4 +84,15 @@ export async function getProblemsByWallId(wallId: string): Promise<Problem[]> {
 export async function deleteProblem(problemId: string) {
   const problemRef = doc(db, "problems", problemId);
   await deleteDoc(problemRef);
+}
+
+export async function updateProblem(problemId: string, input: UpdateProblemInput) {
+  const problemRef = doc(db, "problems", problemId);
+
+  await updateDoc(problemRef, {
+    name: input.name,
+    grade: input.grade,
+    description: input.description,
+    holds: input.holds
+  });
 }
