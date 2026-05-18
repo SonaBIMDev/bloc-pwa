@@ -1,5 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 
+const FEEDBACK_FORM_URL = "https://forms.gle/57xe9oEi2Zpvqht16";
+
 export default function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -23,6 +25,10 @@ export default function BottomNav() {
       console.error("Erreur partage :", error);
       alert("Impossible de partager l'application.");
     }
+  }
+
+  function handleFeedback() {
+    window.open(FEEDBACK_FORM_URL, "_blank", "noopener,noreferrer");
   }
 
   const isHome = location.pathname === "/";
@@ -115,6 +121,43 @@ export default function BottomNav() {
           }}
         >
           Partager
+        </span>
+      </button>
+
+      <button
+        type="button"
+        onClick={handleFeedback}
+        style={{
+          background: "none",
+          border: "none",
+          color: "#ffffff",
+          cursor: "pointer",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 4,
+          minWidth: 64
+        }}
+      >
+        <img
+          src="/icons/feedback.png"
+          alt="Feedback"
+          style={{
+            width: 22,
+            height: 22,
+            display: "block",
+            opacity: 0.9
+          }}
+        />
+        <span
+          style={{
+            fontSize: 10,
+            textTransform: "uppercase",
+            fontWeight: 700,
+            color: "#ffffff"
+          }}
+        >
+          Feedback
         </span>
       </button>
     </nav>
