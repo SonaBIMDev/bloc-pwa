@@ -365,6 +365,8 @@ export default function ProblemDetailPage() {
           )}
         </div>
       </section>
+
+       <div style={{ height: 140 }} />
     </div>
   );
 }
