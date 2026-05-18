@@ -1,155 +1,86 @@
-import { Outlet, Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { onAuthStateChanged, type User } from "firebase/auth";
-import { auth } from "./firebase";
-import { logout, signInWithGoogle } from "./services/authService";
-import BottomNav from "./components/BottomNav";
-import { APP_NAME, APP_VERSION } from "./config/appInfo";
+import { useNavigate, useLocation } from "react-router-dom";
 
-export default function App() {
+export default function BottomNav() {
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
-  const [isSigningIn, setIsSigningIn] = useState(false);
+  const location = useLocation();
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (nextUser) => {
-      setUser(nextUser);
-      setIsAuthLoading(false);
-    });
+  async function handleShareApp() {
+    const shareData = {
+      title: "FreeBloc",
+      text: "Découvre FreeBloc, l'app pour créer et partager des blocs en salle.",
+      url: window.location.origin
+    };
 
-    return () => unsubscribe();
-  }, []);
-
-  async function handleGoogleSignIn() {
     try {
-      setIsSigningIn(true);
-      await signInWithGoogle();
+      if (navigator.share) {
+        await navigator.share(shareData);
+        return;
+      }
+
+      await navigator.clipboard.writeText(window.location.origin);
+      alert("Lien de l'application copié dans le presse-papiers.");
     } catch (error) {
-      console.error("Erreur Google Sign-In :", error);
-      alert("Impossible de se connecter avec Google.");
-    } finally {
-      setIsSigningIn(false);
+      console.error("Erreur partage :", error);
+      alert("Impossible de partager l'application.");
     }
   }
 
-  async function handleLogout() {
-    try {
-      await logout();
-      navigate("/");
-    } catch (error) {
-      console.error("Erreur déconnexion :", error);
-      alert("Impossible de se déconnecter.");
-    }
-  }
+  const isHome = location.pathname === "/";
 
   return (
-    <div style={{ minHeight: "100vh", background: "#000000", color: "white" }}>
-      <header
+    <nav
+      style={{
+        position: "fixed",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 60,
+        background: "#050505",
+        borderTop: "1px solid #1f1f1f",
+        display: "flex",
+        justifyContent: "space-around",
+        alignItems: "center",
+        zIndex: 1000,
+        paddingBottom: "env(safe-area-inset-bottom)"
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => navigate("/")}
         style={{
-          padding: "14px 16px",
-          borderBottom: "1px solid #1a1a1a",
+          background: "none",
+          border: "none",
+          color: isHome ? "#22c55e" : "#ffffff",
+          fontWeight: 700,
+          cursor: "pointer",
           display: "flex",
-          justifyContent: "space-between",
+          flexDirection: "column",
           alignItems: "center",
-          gap: 12,
-          background: "#000000",
-          position: "sticky",
-          top: 0,
-          zIndex: 999
+          gap: 2
         }}
       >
-        <Link
-          to="/"
-          style={{
-            color: "white",
-            textDecoration: "none",
-            fontWeight: 700,
-            fontSize: 20,
-            letterSpacing: "0.8px",
-            textTransform: "uppercase"
-          }}
-        >
-        <span style={{ fontSize: 11, opacity: 0.7 }}>
-          v{APP_VERSION}
-        </span>
-        </Link>
+        <span style={{ fontSize: 20 }}>⌂</span>
+        <span style={{ fontSize: 10, textTransform: "uppercase" }}>Accueil</span>
+      </button>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-          {isAuthLoading ? (
-            <span style={{ fontSize: 12, opacity: 0.8 }}>Chargement...</span>
-          ) : user ? (
-            <>
-              {user.photoURL && (
-                <img
-                  src={user.photoURL}
-                  alt={user.displayName || "Avatar"}
-                  referrerPolicy="no-referrer"
-                  style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                    border: "1px solid #2a2a2a"
-                  }}
-                />
-              )}
-
-              <span style={{ fontSize: 12, opacity: 0.9, textTransform: "uppercase" }}>
-                {user.displayName || user.email || "Utilisateur"}
-              </span>
-
-              <button
-                type="button"
-                onClick={handleLogout}
-                style={{
-                  padding: "8px 10px",
-                  borderRadius: 8,
-                  border: "1px solid #2a2a2a",
-                  background: "#111111",
-                  color: "white",
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  cursor: "pointer"
-                }}
-              >
-                Déconnexion
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              onClick={handleGoogleSignIn}
-              disabled={isSigningIn}
-              style={{
-                padding: "8px 10px",
-                borderRadius: 8,
-                border: "none",
-                background: "#22c55e",
-                color: "#04130a",
-                fontWeight: 700,
-                textTransform: "uppercase",
-                cursor: isSigningIn ? "not-allowed" : "pointer"
-              }}
-            >
-              {isSigningIn ? "Connexion..." : "Connexion Google"}
-            </button>
-          )}
-        </div>
-      </header>
-
-      <main
-        className="page-bottom-space"
+      <button
+        type="button"
+        onClick={handleShareApp}
         style={{
-          padding: "14px 16px",
-          maxWidth: 900,
-          margin: "0 auto"
+          background: "none",
+          border: "none",
+          color: "#ffffff",
+          fontWeight: 700,
+          cursor: "pointer",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 2
         }}
       >
-        <Outlet />
-      </main>
-
-      <BottomNav />
-    </div>
+        <span style={{ fontSize: 20 }}>⤴</span>
+        <span style={{ fontSize: 10, textTransform: "uppercase" }}>Partager</span>
+      </button>
+    </nav>
   );
 }
