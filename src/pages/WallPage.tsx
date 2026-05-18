@@ -78,6 +78,43 @@ export default function WallPage() {
   return (
     <div>
       <h1>{wall ? wall.name : `Salle : ${wallId}`}</h1>
+      {wall?.photoURL && (
+      <img
+        src={wall.photoURL}
+        alt={wall.name}
+        style={{
+          width: "100%",
+          maxWidth: 700,
+          height: 180,
+          objectFit: "cover",
+          borderRadius: 12,
+          marginBottom: 12
+        }}
+      />
+    )}
+
+    {wall?.locationLabel && (
+      <p>
+        <strong>Lieu :</strong> {wall.locationLabel}
+      </p>
+    )}
+
+    {wall?.mapsUrl && (
+      <a
+        href={wall.mapsUrl}
+        target="_blank"
+        rel="noreferrer"
+        style={{
+          display: "inline-block",
+          marginBottom: 16,
+          color: "#38bdf8",
+          textDecoration: "none",
+          fontWeight: 700
+        }}
+      >
+        Voir la localisation
+      </a>
+    )}
       <p>Liste des blocs publiés dans cette salle.</p>
 
       {wall && (

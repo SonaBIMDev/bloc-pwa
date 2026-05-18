@@ -4,6 +4,7 @@ import { onAuthStateChanged, type User } from "firebase/auth";
 import { auth } from "./firebase";
 import { logout, signInWithGoogle } from "./services/authService";
 import BottomNav from "./components/BottomNav";
+import { APP_NAME, APP_VERSION } from "./config/appInfo";
 
 export default function App() {
   const navigate = useNavigate();
@@ -69,7 +70,9 @@ export default function App() {
             textTransform: "uppercase"
           }}
         >
-          FreeBloc
+        <span style={{ fontSize: 11, opacity: 0.7 }}>
+          v{APP_VERSION}
+        </span>
         </Link>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
