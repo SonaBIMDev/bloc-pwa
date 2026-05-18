@@ -38,6 +38,7 @@ export default function CreateProblemPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [holds, setHolds] = useState<HoldPoint[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [markerSize, setMarkerSize] = useState(18);
 
 const holdColor = useMemo<Record<HoldType, string>>(
   () => ({
@@ -228,6 +229,22 @@ const holdColor = useMemo<Record<HoldType, string>>(
         </button>
       </div>
 
+      <div style={{ marginBottom: 16, maxWidth: 320 }}>
+        <label style={{ display: "block", marginBottom: 8 }}>
+          Taille des points : <strong>{markerSize}px</strong>
+        </label>
+
+        <input
+          type="range"
+          min={10}
+          max={40}
+          step={1}
+          value={markerSize}
+          onChange={(e) => setMarkerSize(Number(e.target.value))}
+          style={{ width: "100%" }}
+        />
+    </div>
+
       {imageUrl ? (
         <div
           onClick={handleImageClick}
@@ -254,8 +271,8 @@ const holdColor = useMemo<Record<HoldType, string>>(
                 position: "absolute",
                 left: `${hold.x * 100}%`,
                 top: `${hold.y * 100}%`,
-                width: 18,
-                height: 18,
+                width: markerSize,
+                height: markerSize,
                 borderRadius: "50%",
                 background: holdColor[hold.type],
                 border: "2px solid white",
