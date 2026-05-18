@@ -60,7 +60,7 @@ export default function BottomNav() {
         }}
       >
         <img
-          src="/icons/home.svg"
+          src="/icons/home.png"
           alt="Accueil"
           style={{
             width: 22,
@@ -97,7 +97,7 @@ export default function BottomNav() {
         }}
       >
         <img
-          src="/icons/share.svg"
+          src="/icons/share.png"
           alt="Partager"
           style={{
             width: 22,
