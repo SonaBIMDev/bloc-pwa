@@ -38,6 +38,7 @@ export interface Problem {
   description?: string;
   imageUrl: string;
   holds: HoldPoint[];
+  markerSize?: number;
   createdAt: number;
   likesCount: number;
   commentsCount: number;

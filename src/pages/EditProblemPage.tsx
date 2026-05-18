@@ -146,7 +146,8 @@ export default function EditProblemPage() {
         name: name.trim(),
         grade,
         description: description.trim(),
-        holds
+        holds,
+        markerSize
       });
 
       navigate(`/problems/${problemId}`);

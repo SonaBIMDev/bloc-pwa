@@ -23,6 +23,7 @@ interface CreateProblemInput {
   imageUrl: string;
   authorPhotoURL?: string;
   holds: HoldPoint[];
+  markerSize?: number;
 }
 
 interface UpdateProblemInput {
@@ -30,6 +31,7 @@ interface UpdateProblemInput {
   grade: ProblemGradeColor;
   description: string;
   holds: HoldPoint[];
+  markerSize?: number;
 }
 
 export async function createProblem(input: CreateProblemInput) {
@@ -43,6 +45,7 @@ export async function createProblem(input: CreateProblemInput) {
     description: input.description,
     imageUrl: input.imageUrl,
     holds: input.holds,
+    markerSize: input.markerSize || 18,
     createdAt: Date.now(),
     likesCount: 0,
     commentsCount: 0
@@ -93,6 +96,7 @@ export async function updateProblem(problemId: string, input: UpdateProblemInput
     name: input.name,
     grade: input.grade,
     description: input.description,
-    holds: input.holds
+    holds: input.holds,
+    markerSize: input.markerSize || 18
   });
 }
