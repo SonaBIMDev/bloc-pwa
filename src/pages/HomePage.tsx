@@ -7,7 +7,6 @@ import { isCurrentUserAdmin } from "../services/authService";
 import type { Wall } from "../types";
 
 export default function HomePage() {
-  const [, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [walls, setWalls] = useState<Wall[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -15,8 +14,6 @@ export default function HomePage() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (nextUser) => {
-      setIsLoggedIn(!!nextUser);
-
       if (nextUser) {
         const admin = await isCurrentUserAdmin();
         setIsAdmin(admin);
@@ -75,14 +72,14 @@ export default function HomePage() {
         <p>Aucune salle de bloc pour le moment.</p>
       )}
 
-      <div style={{ display: "grid", gap: 10 }}>
+      <div style={{ display: "grid", gap: 12 }}>
         {walls.map((wall) => (
           <Link
             key={wall.id}
             to={`/walls/${wall.id}`}
             style={{
               display: "block",
-              padding: 14,
+              padding: 12,
               borderRadius: 10,
               background: "#101010",
               color: "white",
@@ -90,9 +87,37 @@ export default function HomePage() {
               border: "1px solid #1f1f1f"
             }}
           >
-            <div style={{ fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.4px" }}>
+            {wall.photoURL && (
+              <img
+                src={wall.photoURL}
+                alt={wall.name}
+                style={{
+                  width: "100%",
+                  height: 140,
+                  objectFit: "cover",
+                  borderRadius: 8,
+                  marginBottom: 10,
+                  display: "block"
+                }}
+              />
+            )}
+
+            <div
+              style={{
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.4px",
+                marginBottom: wall.locationLabel ? 4 : 0
+              }}
+            >
               {wall.name}
             </div>
+
+            {wall.locationLabel && (
+              <p style={{ margin: 0, opacity: 0.8 }}>
+                {wall.locationLabel}
+              </p>
+            )}
           </Link>
         ))}
       </div>

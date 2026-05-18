@@ -160,6 +160,25 @@ async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
 
   return (
     <div>
+      <div style={{ marginBottom: 16 }}>
+        <button
+          type="button"
+          onClick={() => navigate(wallId ? `/walls/${wallId}` : "/")}
+          style={{
+            padding: "10px 14px",
+            borderRadius: 8,
+            border: "1px solid #222222",
+            background: "#111111",
+            color: "white",
+            fontWeight: 700,
+            textTransform: "uppercase",
+            cursor: "pointer"
+          }}
+        >
+          ← Retour
+        </button>
+      </div>
+
       <h1>Modifier la salle</h1>
 
       <div style={{ display: "grid", gap: 12, maxWidth: 560 }}>
