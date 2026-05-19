@@ -35,21 +35,22 @@ export default function BottomNav() {
 
   return (
     <nav
-      style={{
-        position: "fixed",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: 64,
-        background: "#050505",
-        borderTop: "1px solid #1f1f1f",
-        display: "flex",
-        justifyContent: "space-around",
-        alignItems: "center",
-        zIndex: 1000,
-        paddingBottom: "env(safe-area-inset-bottom)"
-      }}
-    >
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 64,
+          background: "#050505",
+          borderTop: "1px solid #1f1f1f",
+          display: "flex",
+          justifyContent: "space-around",
+          alignItems: "center",
+          zIndex: 9999,
+          paddingBottom: "env(safe-area-inset-bottom)",
+          boxSizing: "border-box"
+        }}
+      >
       <button
         type="button"
         onClick={() => navigate("/")}

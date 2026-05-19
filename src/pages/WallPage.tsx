@@ -413,6 +413,8 @@ export default function WallPage() {
           );
         })}
       </div>
+
+      <div style={{ height: 140 }} />
     </div>
   );
 }
