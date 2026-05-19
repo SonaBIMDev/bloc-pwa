@@ -5,6 +5,8 @@ import { requireGoogleUser } from "../services/authService";
 import { uploadProblemImage } from "../services/uploadService";
 import { createProblem } from "../services/problemsService";
 import { compressImage } from "../utils/imageCompression";
+import { getSubscriptionsByWallId } from "../services/subscriptionsService";
+import { createNotification } from "../services/notificationsService";
 
 const gradeColors: ProblemGradeColor[] = [
   "blanc",
@@ -134,6 +136,21 @@ async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         holds,
         markerSize
       });
+
+      const subscriptions = await getSubscriptionsByWallId(wallId);
+
+      for (const subscription of subscriptions) {
+        if (subscription.userId === user.uid) continue;
+
+        await createNotification({
+          userId: subscription.userId,
+          type: "new_problem",
+          title: "Nouveau bloc publié",
+          message: `${user.displayName || "Un grimpeur"} a publié "${name.trim()}"`,
+          wallId,
+          problemId
+        });
+      }
 
       navigate(`/problems/${problemId}`);
     } catch (error) {

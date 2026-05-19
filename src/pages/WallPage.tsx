@@ -5,6 +5,11 @@ import { auth } from "../firebase";
 import { getProblemsByWallId, deleteProblem } from "../services/problemsService";
 import { getWallById } from "../services/wallsService";
 import type { Problem, Wall, ProblemGradeColor } from "../types";
+import {
+  subscribeToWall,
+  unsubscribeFromWall,
+  isUserSubscribedToWall
+} from "../services/subscriptionsService";
 
 const SUPER_ADMIN_EMAIL = "pierrotnavarra@gmail.com";
 
@@ -28,11 +33,15 @@ export default function WallPage() {
   const [problems, setProblems] = useState<Problem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+
   const [sortMode, setSortMode] = useState<SortMode>("recent");
   const [gradeFilter, setGradeFilter] = useState<"all" | ProblemGradeColor>("all");
 
   const [swipedProblemId, setSwipedProblemId] = useState<string | null>(null);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
+
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -73,6 +82,20 @@ export default function WallPage() {
     loadWallAndProblems();
   }, [wallId]);
 
+  useEffect(() => {
+    async function loadSubscription() {
+      if (!currentUser || !wallId) {
+        setIsSubscribed(false);
+        return;
+      }
+
+      const subscribed = await isUserSubscribedToWall(currentUser.uid, wallId);
+      setIsSubscribed(subscribed);
+    }
+
+    loadSubscription();
+  }, [currentUser, wallId]);
+
   const isSuperAdmin = useMemo(() => {
     return currentUser?.email === SUPER_ADMIN_EMAIL;
   }, [currentUser]);
@@ -103,6 +126,30 @@ export default function WallPage() {
 
     return items;
   }, [problems, sortMode, gradeFilter]);
+
+  async function handleToggleSubscription() {
+    try {
+      if (!currentUser || !wallId) {
+        alert("Connecte-toi pour suivre une salle.");
+        return;
+      }
+
+      setIsSubscriptionLoading(true);
+
+      if (isSubscribed) {
+        await unsubscribeFromWall(currentUser.uid, wallId);
+        setIsSubscribed(false);
+      } else {
+        await subscribeToWall(currentUser.uid, wallId);
+        setIsSubscribed(true);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Impossible de mettre à jour le suivi.");
+    } finally {
+      setIsSubscriptionLoading(false);
+    }
+  }
 
   async function handleDeleteProblem(problemId: string) {
     try {
@@ -189,21 +236,42 @@ export default function WallPage() {
 
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18 }}>
         {currentUser ? (
-          <Link
-            to={`/walls/${wallId}/create`}
-            style={{
-              display: "inline-block",
-              padding: "10px 14px",
-              borderRadius: 8,
-              background: "#ffffff",
-              color: "#000000",
-              fontWeight: 700,
-              textDecoration: "none",
-              textTransform: "uppercase"
-            }}
-          >
-            Créer un bloc
-          </Link>
+          <>
+            <Link
+              to={`/walls/${wallId}/create`}
+              style={{
+                display: "inline-block",
+                padding: "10px 14px",
+                borderRadius: 8,
+                background: "#ffffff",
+                color: "#000000",
+                fontWeight: 700,
+                textDecoration: "none",
+                textTransform: "uppercase"
+              }}
+            >
+              Créer un bloc
+            </Link>
+
+            <button
+              type="button"
+              onClick={handleToggleSubscription}
+              disabled={isSubscriptionLoading}
+              style={{
+                padding: "10px 14px",
+                borderRadius: 8,
+                background: "#ffffff",
+                color: "#000000",
+                fontWeight: 700,
+                border: "none",
+                cursor: isSubscriptionLoading ? "not-allowed" : "pointer",
+                textTransform: "uppercase",
+                opacity: isSubscriptionLoading ? 0.6 : 1
+              }}
+            >
+              {isSubscribed ? "Ne plus suivre" : "Suivre la salle"}
+            </button>
+          </>
         ) : (
           <div
             style={{

@@ -15,6 +15,25 @@ export interface HoldPoint {
   type: HoldType;
 }
 
+export interface WallSubscription {
+  id?: string;
+  userId: string;
+  wallId: string;
+  createdAt: number;
+}
+
+export interface AppNotification {
+  id?: string;
+  userId: string;
+  type: "new_problem";
+  title: string;
+  message: string;
+  wallId?: string;
+  problemId?: string;
+  isRead: boolean;
+  createdAt: number;
+}
+
 export interface Wall {
   id?: string;
   name: string;
