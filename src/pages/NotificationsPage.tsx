@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { auth } from "../firebase";
 import { getNotificationsByUserId, markNotificationAsRead } from "../services/notificationsService";
