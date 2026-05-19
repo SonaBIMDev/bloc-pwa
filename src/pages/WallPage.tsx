@@ -304,8 +304,8 @@ export default function WallPage() {
                 </p>
 
                 <p style={{ margin: 0, color: "#ffffff" }}>
-                  <span style={{ color: "#ffffff" }}>♥</span> {problem.likesCount || 0} ·{" "}
-                  <span style={{ color: "#ffffff" }}>👁</span> {problem.viewsCount || 0}
+                  <span style={{ color: "#ffffff" }}>LIKE</span> {problem.likesCount || 0} ·{" "}
+                  <span style={{ color: "#ffffff" }}>VUE</span> {problem.viewsCount || 0}
                 </p>
               </div>
             </div>

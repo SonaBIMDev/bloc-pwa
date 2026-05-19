@@ -419,9 +419,9 @@ export default function ProblemDetailPage() {
 
       <div style={{ marginTop: 16 }}>
         <p style={{ color: "#ffffff" }}>
-          <span style={{ color: "#ffffff" }}>👁</span> {problem.viewsCount || 0} ·{" "}
-          <span style={{ color: "#ffffff" }}>♥</span> {problem.likesCount || 0}
-        </p>
+        <span style={{ color: "#ffffff" }}>VUES</span> {problem.viewsCount || 0} ·{" "}
+        <span style={{ color: "#ffffff" }}>LIKES</span> {problem.likesCount || 0}
+      </p>
       </div>
 
       <section style={{ marginTop: 32 }}>
