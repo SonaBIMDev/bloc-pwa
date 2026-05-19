@@ -303,9 +303,33 @@ export default function WallPage() {
                   <strong>Cotation :</strong> {problem.grade}
                 </p>
 
-                <p style={{ margin: 0, color: "#ffffff" }}>
-                  <span style={{ color: "#ffffff" }}>LIKE</span> {problem.likesCount || 0} ·{" "}
-                  <span style={{ color: "#ffffff" }}>VUE</span> {problem.viewsCount || 0}
+                <p
+                  style={{
+                    margin: 0,
+                    color: "#ffffff",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    flexWrap: "wrap"
+                  }}
+                >
+                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <img
+                      src="/icons/heart-full.png"
+                      alt="Likes"
+                      style={{ width: 14, height: 14, display: "block" }}
+                    />
+                    {problem.likesCount || 0}
+                  </span>
+
+                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <img
+                      src="/icons/eye.png"
+                      alt="Vues"
+                      style={{ width: 14, height: 14, display: "block" }}
+                    />
+                    {problem.viewsCount || 0}
+                  </span>
                 </p>
               </div>
             </div>

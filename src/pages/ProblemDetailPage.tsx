@@ -387,15 +387,23 @@ export default function ProblemDetailPage() {
             borderRadius: "50%",
             border: "none",
             background: "rgba(0,0,0,0.65)",
-            color: hasLiked ? "#ef4444" : "#ffffff",
-            fontSize: 22,
             cursor: isLiking ? "not-allowed" : "pointer",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center"
+            justifyContent: "center",
+            padding: 0
           }}
         >
-          {hasLiked ? "♥" : "♡"}
+          <img
+            src={hasLiked ? "/icons/heart-full.png" : "/icons/heart-empty.png"}
+            alt={hasLiked ? "Retirer le like" : "Ajouter un like"}
+            style={{
+              width: 22,
+              height: 22,
+              display: "block",
+              opacity: isLiking ? 0.6 : 1
+            }}
+          />
         </button>
 
         {problem.holds.map((hold, index) => (
@@ -418,10 +426,33 @@ export default function ProblemDetailPage() {
       </div>
 
       <div style={{ marginTop: 16 }}>
-        <p style={{ color: "#ffffff" }}>
-        <span style={{ color: "#ffffff" }}>VUES</span> {problem.viewsCount || 0} ·{" "}
-        <span style={{ color: "#ffffff" }}>LIKES</span> {problem.likesCount || 0}
-      </p>
+        <p
+          style={{
+            color: "#ffffff",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            flexWrap: "wrap"
+          }}
+        >
+          <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <img
+              src="/icons/eye.png"
+              alt="Vues"
+              style={{ width: 16, height: 16, display: "block" }}
+            />
+            {problem.viewsCount || 0}
+          </span>
+
+          <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <img
+              src="/icons/heart-full.png"
+              alt="Likes"
+              style={{ width: 16, height: 16, display: "block" }}
+            />
+            {problem.likesCount || 0}
+          </span>
+        </p>
       </div>
 
       <section style={{ marginTop: 32 }}>
