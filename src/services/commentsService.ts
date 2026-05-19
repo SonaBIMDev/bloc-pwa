@@ -1,4 +1,14 @@
-import { addDoc, collection, getDocs, orderBy, query, where } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  getDocs,
+  orderBy,
+  query,
+  where,
+  updateDoc,
+  doc,
+  increment
+} from "firebase/firestore";
 import { db } from "../firebase";
 import type { ProblemComment } from "../types";
 
@@ -18,6 +28,11 @@ export async function createComment(input: CreateCommentInput) {
     authorPhotoURL: input.authorPhotoURL || "",
     text: input.text,
     createdAt: Date.now()
+  });
+
+  const problemRef = doc(db, "problems", input.problemId);
+  await updateDoc(problemRef, {
+    commentsCount: increment(1)
   });
 
   return docRef.id;
