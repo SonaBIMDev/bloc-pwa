@@ -18,6 +18,8 @@ const gradeColorMap: Record<ProblemGradeColor, string> = {
   noir: "#ffffff"
 };
 
+type SortMode = "recent" | "likes" | "views";
+
 export default function WallPage() {
   const { wallId } = useParams();
 
@@ -26,6 +28,7 @@ export default function WallPage() {
   const [problems, setProblems] = useState<Problem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [sortMode, setSortMode] = useState<SortMode>("recent");
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -75,46 +78,66 @@ export default function WallPage() {
     return wall.createdBy === currentUser.uid || isSuperAdmin;
   }, [currentUser, wall, isSuperAdmin]);
 
+  const sortedProblems = useMemo(() => {
+    const items = [...problems];
+
+    items.sort((a, b) => {
+      if (sortMode === "likes") {
+        return (b.likesCount || 0) - (a.likesCount || 0);
+      }
+
+      if (sortMode === "views") {
+        return (b.viewsCount || 0) - (a.viewsCount || 0);
+      }
+
+      return (b.createdAt || 0) - (a.createdAt || 0);
+    });
+
+    return items;
+  }, [problems, sortMode]);
+
   return (
     <div>
       <h1>{wall ? wall.name : `Salle : ${wallId}`}</h1>
+
       {wall?.photoURL && (
-      <img
-        src={wall.photoURL}
-        alt={wall.name}
-        style={{
-          width: "100%",
-          maxWidth: 700,
-          height: 180,
-          objectFit: "cover",
-          borderRadius: 12,
-          marginBottom: 12
-        }}
-      />
-    )}
+        <img
+          src={wall.photoURL}
+          alt={wall.name}
+          style={{
+            width: "100%",
+            maxWidth: 700,
+            height: 180,
+            objectFit: "cover",
+            borderRadius: 12,
+            marginBottom: 12
+          }}
+        />
+      )}
 
-    {wall?.locationLabel && (
-      <p>
-        <strong>Lieu :</strong> {wall.locationLabel}
-      </p>
-    )}
+      {wall?.locationLabel && (
+        <p>
+          <strong>Lieu :</strong> {wall.locationLabel}
+        </p>
+      )}
 
-    {wall?.mapsUrl && (
-      <a
-        href={wall.mapsUrl}
-        target="_blank"
-        rel="noreferrer"
-        style={{
-          display: "inline-block",
-          marginBottom: 16,
-          color: "#38bdf8",
-          textDecoration: "none",
-          fontWeight: 700
-        }}
-      >
-        Voir la localisation
-      </a>
-    )}
+      {wall?.mapsUrl && (
+        <a
+          href={wall.mapsUrl}
+          target="_blank"
+          rel="noreferrer"
+          style={{
+            display: "inline-block",
+            marginBottom: 16,
+            color: "#38bdf8",
+            textDecoration: "none",
+            fontWeight: 700
+          }}
+        >
+          Voir la localisation
+        </a>
+      )}
+
       <p>Liste des blocs publiés dans cette salle.</p>
 
       {wall && (
@@ -189,6 +212,21 @@ export default function WallPage() {
         )}
       </div>
 
+      <div style={{ marginBottom: 16 }}>
+        <label>
+          <span style={{ marginRight: 8 }}>Trier par</span>
+          <select
+            value={sortMode}
+            onChange={(e) => setSortMode(e.target.value as SortMode)}
+            style={{ padding: 8, borderRadius: 8 }}
+          >
+            <option value="recent">Plus récents</option>
+            <option value="likes">Plus likés</option>
+            <option value="views">Plus vus</option>
+          </select>
+        </label>
+      </div>
+
       {isLoading && <p>Chargement des blocs...</p>}
       {error && <p>{error}</p>}
 
@@ -197,7 +235,7 @@ export default function WallPage() {
       )}
 
       <div style={{ display: "grid", gap: 10 }}>
-        {problems.map((problem) => (
+        {sortedProblems.map((problem) => (
           <Link
             key={problem.id}
             to={`/problems/${problem.id}`}
@@ -266,7 +304,7 @@ export default function WallPage() {
                 </p>
 
                 <p style={{ margin: 0 }}>
-                  <strong>Prises :</strong> {problem.holds.length}
+                  <strong>♥</strong> {problem.likesCount || 0} · <strong>👁</strong> {problem.viewsCount || 0}
                 </p>
               </div>
             </div>

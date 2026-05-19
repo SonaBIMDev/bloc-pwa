@@ -41,6 +41,7 @@ export interface Problem {
   markerSize?: number;
   createdAt: number;
   likesCount: number;
+  viewsCount: number;
   commentsCount: number;
 }
 

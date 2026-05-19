@@ -8,7 +8,9 @@ import {
   query,
   where,
   orderBy,
-  updateDoc
+  updateDoc,
+  increment,
+  setDoc
 } from "firebase/firestore";
 import { db } from "../firebase";
 import type { HoldPoint, Problem, ProblemGradeColor } from "../types";
@@ -48,6 +50,7 @@ export async function createProblem(input: CreateProblemInput) {
     markerSize: input.markerSize || 18,
     createdAt: Date.now(),
     likesCount: 0,
+    viewsCount: 0,
     commentsCount: 0
   });
 
@@ -98,5 +101,44 @@ export async function updateProblem(problemId: string, input: UpdateProblemInput
     description: input.description,
     holds: input.holds,
     markerSize: input.markerSize || 18
+  });
+}
+
+export async function incrementProblemViews(problemId: string) {
+  const problemRef = doc(db, "problems", problemId);
+
+  await updateDoc(problemRef, {
+    viewsCount: increment(1)
+  });
+}
+
+export async function hasUserLikedProblem(problemId: string, userId: string) {
+  const likeRef = doc(db, "problems", problemId, "likes", userId);
+  const snapshot = await getDoc(likeRef);
+  return snapshot.exists();
+}
+
+export async function likeProblem(problemId: string, userId: string) {
+  const likeRef = doc(db, "problems", problemId, "likes", userId);
+  const problemRef = doc(db, "problems", problemId);
+
+  await setDoc(likeRef, {
+    userId,
+    createdAt: Date.now()
+  });
+
+  await updateDoc(problemRef, {
+    likesCount: increment(1)
+  });
+}
+
+export async function unlikeProblem(problemId: string, userId: string) {
+  const likeRef = doc(db, "problems", problemId, "likes", userId);
+  const problemRef = doc(db, "problems", problemId);
+
+  await deleteDoc(likeRef);
+
+  await updateDoc(problemRef, {
+    likesCount: increment(-1)
   });
 }

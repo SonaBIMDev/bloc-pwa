@@ -2,7 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { auth } from "../firebase";
-import { getProblemById, deleteProblem } from "../services/problemsService";
+import {
+  getProblemById,
+  deleteProblem,
+  incrementProblemViews,
+  likeProblem,
+  unlikeProblem,
+  hasUserLikedProblem
+} from "../services/problemsService";
 import { createComment, getCommentsByProblemId } from "../services/commentsService";
 import { requireGoogleUser, isCurrentUserAdmin } from "../services/authService";
 import type {
@@ -28,6 +35,8 @@ export default function ProblemDetailPage() {
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [hasLiked, setHasLiked] = useState(false);
+  const [isLiking, setIsLiking] = useState(false);
 
   const [problem, setProblem] = useState<Problem | null>(null);
   const [comments, setComments] = useState<ProblemComment[]>([]);
@@ -91,7 +100,14 @@ export default function ProblemDetailPage() {
           return;
         }
 
-        setProblem(data);
+        await incrementProblemViews(problemId);
+
+        const updatedProblem = {
+          ...data,
+          viewsCount: (data.viewsCount || 0) + 1
+        };
+
+        setProblem(updatedProblem);
         await loadComments(problemId);
       } catch (err) {
         console.error(err);
@@ -103,6 +119,61 @@ export default function ProblemDetailPage() {
 
     loadProblem();
   }, [problemId]);
+
+  useEffect(() => {
+    async function checkLiked() {
+      if (!problemId || !currentUser) return;
+
+      const liked = await hasUserLikedProblem(problemId, currentUser.uid);
+      setHasLiked(liked);
+    }
+
+    checkLiked();
+  }, [problemId, currentUser]);
+
+  async function handleLikeProblem() {
+  try {
+    if (!problemId) return;
+
+    if (!currentUser) {
+      alert("Connecte-toi pour liker un bloc.");
+      return;
+    }
+
+    setIsLiking(true);
+
+    if (hasLiked) {
+      await unlikeProblem(problemId, currentUser.uid);
+      setHasLiked(false);
+
+      setProblem((prev) =>
+        prev
+          ? {
+              ...prev,
+              likesCount: Math.max((prev.likesCount || 0) - 1, 0)
+            }
+          : prev
+      );
+    } else {
+      await likeProblem(problemId, currentUser.uid);
+      setHasLiked(true);
+
+      setProblem((prev) =>
+        prev
+          ? {
+              ...prev,
+              likesCount: (prev.likesCount || 0) + 1
+            }
+          : prev
+      );
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Impossible de mettre à jour le like.");
+  } finally {
+    setIsLiking(false);
+  }
+}
 
   async function handleAddComment() {
     try {
@@ -149,9 +220,7 @@ export default function ProblemDetailPage() {
         return;
       }
 
-      const confirmed = window.confirm(
-        "Es-tu sûr de vouloir supprimer ce bloc ?"
-      );
+      const confirmed = window.confirm("Es-tu sûr de vouloir supprimer ce bloc ?");
 
       if (!confirmed) {
         return;
@@ -304,6 +373,30 @@ export default function ProblemDetailPage() {
           style={{ width: "100%", display: "block", borderRadius: 12 }}
         />
 
+        <button
+          type="button"
+          onClick={handleLikeProblem}
+          disabled={isLiking}
+          style={{
+            position: "absolute",
+            top: 12,
+            right: 12,
+            width: 44,
+            height: 44,
+            borderRadius: "50%",
+            border: "none",
+            background: "rgba(0,0,0,0.65)",
+            color: hasLiked ? "#ef4444" : "white",
+            fontSize: 22,
+            cursor: isLiking ? "not-allowed" : "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}
+        >
+          {hasLiked ? "♥" : "♡"}
+        </button>
+
         {problem.holds.map((hold, index) => (
           <div
             key={index}
@@ -313,7 +406,7 @@ export default function ProblemDetailPage() {
               left: `${hold.x * 100}%`,
               top: `${hold.y * 100}%`,
               width: problem.markerSize || 18,
-            height: problem.markerSize || 18,
+              height: problem.markerSize || 18,
               borderRadius: "50%",
               background: holdColor[hold.type],
               border: "2px solid white",
@@ -325,7 +418,7 @@ export default function ProblemDetailPage() {
 
       <div style={{ marginTop: 16 }}>
         <p>
-          <strong>Nombre de prises :</strong> {problem.holds.length}
+          <strong>Vues :</strong> {problem.viewsCount || 0} · <strong>Cœurs :</strong> {problem.likesCount || 0}
         </p>
       </div>
 
