@@ -170,8 +170,8 @@ export default function WallPage() {
               display: "inline-block",
               padding: "10px 14px",
               borderRadius: 8,
-              background: "#22c55e",
-              color: "#04130a",
+              background: "#ffffff",
+              color: "#000000",
               fontWeight: 700,
               textDecoration: "none",
               textTransform: "uppercase"
@@ -200,8 +200,8 @@ export default function WallPage() {
               display: "inline-block",
               padding: "10px 14px",
               borderRadius: 8,
-              background: "#f59e0b",
-              color: "#111827",
+              background: "#ffffff",
+              color: "#000000",
               fontWeight: 700,
               textDecoration: "none",
               textTransform: "uppercase"
@@ -303,8 +303,9 @@ export default function WallPage() {
                   <strong>Cotation :</strong> {problem.grade}
                 </p>
 
-                <p style={{ margin: 0 }}>
-                  <strong>♥</strong> {problem.likesCount || 0} · <strong>👁</strong> {problem.viewsCount || 0}
+                <p style={{ margin: 0, color: "#ffffff" }}>
+                  <span style={{ color: "#ffffff" }}>♥</span> {problem.likesCount || 0} ·{" "}
+                  <span style={{ color: "#ffffff" }}>👁</span> {problem.viewsCount || 0}
                 </p>
               </div>
             </div>

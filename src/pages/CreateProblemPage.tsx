@@ -309,8 +309,9 @@ async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
             padding: "12px 16px",
             borderRadius: 10,
             border: "none",
-            background: isSaving ? "#64748b" : "#22c55e",
-            color: isSaving ? "white" : "#052e16",
+            background: "#ffffff",
+            color: "#000000",
+            opacity: isSaving ? 0.6 : 1,
             fontWeight: 700,
             cursor: isSaving ? "not-allowed" : "pointer"
           }}

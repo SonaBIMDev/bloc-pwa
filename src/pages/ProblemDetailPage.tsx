@@ -287,8 +287,8 @@ export default function ProblemDetailPage() {
                 padding: "10px 14px",
                 borderRadius: 8,
                 border: "1px solid #222222",
-                background: "#f59e0b",
-                color: "#111111",
+                background: "#ffffff",
+                color: "#000000",
                 fontWeight: 700,
                 textTransform: "uppercase",
                 cursor: "pointer"
@@ -305,8 +305,9 @@ export default function ProblemDetailPage() {
                 padding: "10px 14px",
                 borderRadius: 8,
                 border: "none",
-                background: isDeleting ? "#64748b" : "#ef4444",
-                color: "white",
+                background: "#ffffff",
+                color: "#000000",
+                opacity: isDeleting ? 0.6 : 1,
                 fontWeight: 700,
                 textTransform: "uppercase",
                 cursor: isDeleting ? "not-allowed" : "pointer"
@@ -386,7 +387,7 @@ export default function ProblemDetailPage() {
             borderRadius: "50%",
             border: "none",
             background: "rgba(0,0,0,0.65)",
-            color: hasLiked ? "#ef4444" : "white",
+            color: hasLiked ? "#ef4444" : "#ffffff",
             fontSize: 22,
             cursor: isLiking ? "not-allowed" : "pointer",
             display: "flex",
@@ -417,8 +418,9 @@ export default function ProblemDetailPage() {
       </div>
 
       <div style={{ marginTop: 16 }}>
-        <p>
-          <strong>Vues :</strong> {problem.viewsCount || 0} · <strong>Cœurs :</strong> {problem.likesCount || 0}
+        <p style={{ color: "#ffffff" }}>
+          <span style={{ color: "#ffffff" }}>👁</span> {problem.viewsCount || 0} ·{" "}
+          <span style={{ color: "#ffffff" }}>♥</span> {problem.likesCount || 0}
         </p>
       </div>
 

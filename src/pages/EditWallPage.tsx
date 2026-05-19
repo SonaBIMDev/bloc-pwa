@@ -235,13 +235,14 @@ async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
               padding: "12px 16px",
               borderRadius: 10,
               border: "none",
-              background: "#22c55e",
-              color: "#052e16",
+              background: "#ffffff",
+              color: "#000000",
               fontWeight: 700,
-              cursor: "pointer"
+              cursor: isSaving ? "not-allowed" : "pointer",
+              opacity: isSaving ? 0.6 : 1
             }}
           >
-            Enregistrer
+            {isSaving ? "Enregistrement..." : "Enregistrer"}
           </button>
 
           <button
@@ -252,8 +253,8 @@ async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
               padding: "12px 16px",
               borderRadius: 10,
               border: "none",
-              background: "#ef4444",
-              color: "white",
+              background: "#ffffff",
+              color: "#000000",
               fontWeight: 700,
               cursor: "pointer"
             }}
