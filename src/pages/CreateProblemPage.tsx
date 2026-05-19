@@ -277,23 +277,24 @@ async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
             style={{ width: "100%", display: "block", borderRadius: 12 }}
           />
 
-          {holds.map((hold, index) => (
-            <div
-              key={index}
-              title={`${hold.type} (${index + 1})`}
-              style={{
-                position: "absolute",
-                left: `${hold.x * 100}%`,
-                top: `${hold.y * 100}%`,
-                width: markerSize,
-                height: markerSize,
-                borderRadius: "50%",
-                background: holdColor[hold.type],
-                border: "2px solid white",
-                transform: "translate(-50%, -50%)"
-              }}
-            />
-          ))}
+         {holds.map((hold, index) => (
+          <div
+            key={index}
+            title={`${hold.type} (${index + 1})`}
+            style={{
+              position: "absolute",
+              left: `${hold.x * 100}%`,
+              top: `${hold.y * 100}%`,
+              width: markerSize,
+              height: markerSize,
+              borderRadius: "50%",
+              background: "transparent",
+              border: `3px solid ${holdColor[hold.type]}`,
+              boxShadow: "0 0 0 1px rgba(255,255,255,0.35)",
+              transform: "translate(-50%, -50%)"
+            }}
+          />
+))}
         </div>
       ) : (
         <p>Ajoute d’abord une photo du mur.</p>

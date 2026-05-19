@@ -2,7 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { auth } from "../firebase";
-import { getProblemsByWallId } from "../services/problemsService";
+import { getProblemsByWallId, deleteProblem } from "../services/problemsService";
 import { getWallById } from "../services/wallsService";
 import type { Problem, Wall, ProblemGradeColor } from "../types";
 
@@ -29,6 +29,9 @@ export default function WallPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [sortMode, setSortMode] = useState<SortMode>("recent");
+
+  const [swipedProblemId, setSwipedProblemId] = useState<string | null>(null);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -95,6 +98,23 @@ export default function WallPage() {
 
     return items;
   }, [problems, sortMode]);
+
+  async function handleDeleteProblem(problemId: string) {
+    try {
+      const confirmed = window.confirm("Supprimer ce bloc ?");
+      if (!confirmed) return;
+
+      await deleteProblem(problemId);
+
+      setProblems((prev) => prev.filter((item) => item.id !== problemId));
+      if (swipedProblemId === problemId) {
+        setSwipedProblemId(null);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Impossible de supprimer le bloc.");
+    }
+  }
 
   return (
     <div>
@@ -235,106 +255,163 @@ export default function WallPage() {
       )}
 
       <div style={{ display: "grid", gap: 10 }}>
-        {sortedProblems.map((problem) => (
-          <Link
-            key={problem.id}
-            to={`/problems/${problem.id}`}
-            style={{
-              display: "block",
-              background: "#101010",
-              borderRadius: 10,
-              padding: 10,
-              color: "white",
-              textDecoration: "none",
-              border: "1px solid #1f1f1f"
-            }}
-          >
+        {sortedProblems.map((problem) => {
+          const canManageProblem =
+            !!currentUser &&
+            (problem.authorId === currentUser.uid || isSuperAdmin);
+
+          return (
             <div
+              key={problem.id}
+              onTouchStart={(e) => {
+                if (!canManageProblem) return;
+                setTouchStartX(e.changedTouches[0].clientX);
+              }}
+              onTouchEnd={(e) => {
+                if (!canManageProblem || touchStartX === null) return;
+
+                const touchEndX = e.changedTouches[0].clientX;
+                const deltaX = touchEndX - touchStartX;
+
+                if (deltaX < -60) {
+                  setSwipedProblemId(problem.id || null);
+                } else if (deltaX > 30) {
+                  setSwipedProblemId(null);
+                }
+
+                setTouchStartX(null);
+              }}
               style={{
-                display: "grid",
-                gridTemplateColumns: "84px 1fr",
-                gap: 10,
-                alignItems: "start"
+                position: "relative"
               }}
             >
-              <img
-                src={problem.imageUrl}
-                alt={problem.name}
+              <Link
+                to={`/problems/${problem.id}`}
                 style={{
-                  width: 84,
-                  height: 84,
-                  borderRadius: 8,
-                  objectFit: "cover",
-                  display: "block"
+                  display: "block",
+                  background: "#101010",
+                  borderRadius: 10,
+                  padding: 10,
+                  color: "white",
+                  textDecoration: "none",
+                  border: "1px solid #1f1f1f"
                 }}
-              />
-
-              <div>
-                <h2
+              >
+                <div
                   style={{
-                    margin: "0 0 6px 0",
-                    color: gradeColorMap[problem.grade] || "#ffffff"
+                    display: "grid",
+                    gridTemplateColumns: "84px 1fr",
+                    gap: 10,
+                    alignItems: "start"
                   }}
                 >
-                  {problem.name}
-                </h2>
+                  <img
+                    src={problem.imageUrl}
+                    alt={problem.name}
+                    style={{
+                      width: 84,
+                      height: 84,
+                      borderRadius: 8,
+                      objectFit: "cover",
+                      display: "block"
+                    }}
+                  />
 
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                  {problem.authorPhotoURL && (
-                    <img
-                      src={problem.authorPhotoURL}
-                      alt={problem.authorName || "Auteur"}
-                      referrerPolicy="no-referrer"
+                  <div>
+                    <h2
                       style={{
-                        width: 24,
-                        height: 24,
-                        borderRadius: "50%",
-                        objectFit: "cover"
+                        margin: "0 0 6px 0",
+                        color: gradeColorMap[problem.grade] || "#ffffff"
                       }}
-                    />
-                  )}
+                    >
+                      {problem.name}
+                    </h2>
 
-                  <p style={{ margin: 0 }}>
-                    <strong>Auteur :</strong> {problem.authorName || "Auteur inconnu"}
-                  </p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                      {problem.authorPhotoURL && (
+                        <img
+                          src={problem.authorPhotoURL}
+                          alt={problem.authorName || "Auteur"}
+                          referrerPolicy="no-referrer"
+                          style={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: "50%",
+                            objectFit: "cover"
+                          }}
+                        />
+                      )}
+
+                      <p style={{ margin: 0 }}>
+                        <strong>Auteur :</strong> {problem.authorName || "Auteur inconnu"}
+                      </p>
+                    </div>
+
+                    <p style={{ margin: "0 0 4px 0" }}>
+                      <strong>Cotation :</strong> {problem.grade}
+                    </p>
+
+                    <p
+                      style={{
+                        margin: 0,
+                        color: "#ffffff",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        flexWrap: "wrap"
+                      }}
+                    >
+                      <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <img
+                          src="/icons/heart-full.png"
+                          alt="Likes"
+                          style={{ width: 14, height: 14, display: "block" }}
+                        />
+                        {problem.likesCount || 0}
+                      </span>
+
+                      <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <img
+                          src="/icons/eye.png"
+                          alt="Vues"
+                          style={{ width: 14, height: 14, display: "block" }}
+                        />
+                        {problem.viewsCount || 0}
+                      </span>
+                    </p>
+                  </div>
                 </div>
+              </Link>
 
-                <p style={{ margin: "0 0 4px 0" }}>
-                  <strong>Cotation :</strong> {problem.grade}
-                </p>
-
-                <p
+              {canManageProblem && swipedProblemId === problem.id && (
+                <div
                   style={{
-                    margin: 0,
-                    color: "#ffffff",
+                    marginTop: 8,
                     display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    flexWrap: "wrap"
+                    justifyContent: "flex-end"
                   }}
                 >
-                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <img
-                      src="/icons/heart-full.png"
-                      alt="Likes"
-                      style={{ width: 14, height: 14, display: "block" }}
-                    />
-                    {problem.likesCount || 0}
-                  </span>
-
-                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <img
-                      src="/icons/eye.png"
-                      alt="Vues"
-                      style={{ width: 14, height: 14, display: "block" }}
-                    />
-                    {problem.viewsCount || 0}
-                  </span>
-                </p>
-              </div>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteProblem(problem.id!)}
+                    style={{
+                      padding: "10px 14px",
+                      borderRadius: 8,
+                      border: "none",
+                      background: "#ffffff",
+                      color: "#000000",
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Supprimer
+                  </button>
+                </div>
+              )}
             </div>
-          </Link>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

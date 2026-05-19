@@ -417,8 +417,9 @@ export default function ProblemDetailPage() {
               width: problem.markerSize || 18,
               height: problem.markerSize || 18,
               borderRadius: "50%",
-              background: holdColor[hold.type],
-              border: "2px solid white",
+              background: "transparent",
+              border: `3px solid ${holdColor[hold.type]}`,
+              boxShadow: "0 0 0 1px rgba(255,255,255,0.35)",
               transform: "translate(-50%, -50%)"
             }}
           />
