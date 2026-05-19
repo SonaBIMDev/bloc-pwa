@@ -134,11 +134,12 @@ export default function App() {
                 padding: "8px 10px",
                 borderRadius: 8,
                 border: "none",
-                background: "#22c55e",
-                color: "#04130a",
+                background: "#ffffff",
+                color: "#000000",
                 fontWeight: 700,
                 textTransform: "uppercase",
-                cursor: isSigningIn ? "not-allowed" : "pointer"
+                cursor: isSigningIn ? "not-allowed" : "pointer",
+                opacity: isSigningIn ? 0.6 : 1
               }}
             >
               {isSigningIn ? "Connexion..." : "Connexion Google"}
