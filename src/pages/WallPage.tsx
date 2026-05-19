@@ -237,40 +237,40 @@ export default function WallPage() {
         )}
       </div>
 
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
-        <label>
-          <span style={{ marginRight: 8 }}>Trier par</span>
-          <select
-            value={sortMode}
-            onChange={(e) => setSortMode(e.target.value as SortMode)}
-            style={{ padding: 8, borderRadius: 8 }}
-          >
-            <option value="recent">Plus récents</option>
-            <option value="likes">Plus likés</option>
-            <option value="views">Plus vus</option>
-          </select>
-        </label>
+      <div style={{ display: "grid", gap: 12, marginBottom: 16 }}>
+      <label>
+        <div style={{ marginBottom: 6 }}>Trier par</div>
+        <select
+          value={sortMode}
+          onChange={(e) => setSortMode(e.target.value as SortMode)}
+          style={{ padding: 8, borderRadius: 8 }}
+        >
+          <option value="recent">Plus récents</option>
+          <option value="likes">Plus likés</option>
+          <option value="views">Plus vus</option>
+        </select>
+      </label>
 
-        <label>
-          <span style={{ marginRight: 8 }}>Filtrer par cotation</span>
-          <select
-            value={gradeFilter}
-            onChange={(e) =>
-              setGradeFilter(e.target.value as "all" | ProblemGradeColor)
-            }
-            style={{ padding: 8, borderRadius: 8 }}
-          >
-            <option value="all">Toutes</option>
-            <option value="blanc">Blanc</option>
-            <option value="vert">Vert</option>
-            <option value="bleu">Bleu</option>
-            <option value="rose">Rose</option>
-            <option value="orange">Orange</option>
-            <option value="jaune">Jaune</option>
-            <option value="noir">Noir</option>
-          </select>
-        </label>
-      </div>
+      <label>
+        <div style={{ marginBottom: 6 }}>Filtrer par cotation</div>
+        <select
+          value={gradeFilter}
+          onChange={(e) =>
+            setGradeFilter(e.target.value as "all" | ProblemGradeColor)
+          }
+          style={{ padding: 8, borderRadius: 8 }}
+        >
+          <option value="all">Toutes</option>
+          <option value="blanc">Blanc</option>
+          <option value="vert">Vert</option>
+          <option value="bleu">Bleu</option>
+          <option value="rose">Rose</option>
+          <option value="orange">Orange</option>
+          <option value="jaune">Jaune</option>
+          <option value="noir">Noir</option>
+        </select>
+      </label>
+    </div>
 
       {isLoading && <p>Chargement des blocs...</p>}
       {error && <p>{error}</p>}
@@ -406,6 +406,15 @@ export default function WallPage() {
                           style={{ width: 14, height: 14, display: "block" }}
                         />
                         {problem.viewsCount || 0}
+                      </span>
+
+                      <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <img
+                          src="/icons/comments.png"
+                          alt="Commentaires"
+                          style={{ width: 14, height: 14, display: "block" }}
+                        />
+                        {problem.commentsCount || 0}
                       </span>
                     </p>
                   </div>

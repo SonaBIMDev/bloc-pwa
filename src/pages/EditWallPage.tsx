@@ -263,6 +263,9 @@ async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
           </button>
         </div>
       </div>
+
+       <div style={{ height: 140 }} />
+       
     </div>
   );
 }

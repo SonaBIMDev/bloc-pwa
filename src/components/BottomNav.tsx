@@ -57,10 +57,11 @@ export default function BottomNav() {
         style={{
           background: "none",
           border: "none",
-          color: isHome ? "#22c55e" : "#ffffff",
+          color: "#ffffff",
           cursor: "pointer",
           display: "flex",
           flexDirection: "column",
+          opacity: 1,
           alignItems: "center",
           gap: 4,
           minWidth: 64
@@ -73,7 +74,7 @@ export default function BottomNav() {
             width: 22,
             height: 22,
             display: "block",
-            opacity: isHome ? 1 : 0.9
+            opacity: 1
           }}
         />
         <span
@@ -81,7 +82,7 @@ export default function BottomNav() {
             fontSize: 10,
             textTransform: "uppercase",
             fontWeight: 700,
-            color: isHome ? "#22c55e" : "#ffffff"
+            color: "#ffffff"
           }}
         >
           Accueil
