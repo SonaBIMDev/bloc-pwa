@@ -163,7 +163,7 @@ export default function WallPage() {
         </a>
       )}
 
-      <p>Liste des blocs publiés dans cette salle.</p>
+      <p>{problems.length} blocs créés</p>
 
       {wall && (
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>

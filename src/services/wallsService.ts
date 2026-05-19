@@ -38,6 +38,8 @@ export async function createWall(input: CreateWallInput) {
     photoURL: input.photoURL || "",
     locationLabel: input.locationLabel || "",
     mapsUrl: input.mapsUrl || "",
+    blocksCount: 0,
+    climbersCount: 0,
     createdAt: Date.now()
   });
 

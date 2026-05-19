@@ -37,6 +37,15 @@ interface UpdateProblemInput {
 }
 
 export async function createProblem(input: CreateProblemInput) {
+  const existingProblemsQuery = query(
+    collection(db, "problems"),
+    where("wallId", "==", input.wallId),
+    where("authorId", "==", input.authorId)
+  );
+
+  const existingProblemsSnapshot = await getDocs(existingProblemsQuery);
+  const isFirstProblemForAuthorInWall = existingProblemsSnapshot.empty;
+
   const docRef = await addDoc(collection(db, "problems"), {
     wallId: input.wallId,
     authorId: input.authorId,
@@ -52,6 +61,13 @@ export async function createProblem(input: CreateProblemInput) {
     likesCount: 0,
     viewsCount: 0,
     commentsCount: 0
+  });
+
+  const wallRef = doc(db, "walls", input.wallId);
+
+  await updateDoc(wallRef, {
+    blocksCount: increment(1),
+    ...(isFirstProblemForAuthorInWall ? { climbersCount: increment(1) } : {})
   });
 
   return docRef.id;
@@ -89,7 +105,30 @@ export async function getProblemsByWallId(wallId: string): Promise<Problem[]> {
 
 export async function deleteProblem(problemId: string) {
   const problemRef = doc(db, "problems", problemId);
+  const snapshot = await getDoc(problemRef);
+
+  if (!snapshot.exists()) return;
+
+  const problem = snapshot.data() as Omit<Problem, "id">;
+
+  const sameAuthorProblemsQuery = query(
+    collection(db, "problems"),
+    where("wallId", "==", problem.wallId),
+    where("authorId", "==", problem.authorId)
+  );
+
+  const sameAuthorProblemsSnapshot = await getDocs(sameAuthorProblemsQuery);
+
   await deleteDoc(problemRef);
+
+  const wallRef = doc(db, "walls", problem.wallId);
+
+  const shouldDecrementClimbersCount = sameAuthorProblemsSnapshot.size <= 1;
+
+  await updateDoc(wallRef, {
+    blocksCount: increment(-1),
+    ...(shouldDecrementClimbersCount ? { climbersCount: increment(-1) } : {})
+  });
 }
 
 export async function updateProblem(problemId: string, input: UpdateProblemInput) {

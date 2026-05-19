@@ -24,6 +24,8 @@ export interface Wall {
   photoURL?: string;
   locationLabel?: string;
   mapsUrl?: string;
+  blocksCount?: number;
+  climbersCount?: number;
   createdAt: number;
 }
 
