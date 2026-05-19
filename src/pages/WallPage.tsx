@@ -29,6 +29,7 @@ export default function WallPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [sortMode, setSortMode] = useState<SortMode>("recent");
+  const [gradeFilter, setGradeFilter] = useState<"all" | ProblemGradeColor>("all");
 
   const [swipedProblemId, setSwipedProblemId] = useState<string | null>(null);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
@@ -81,8 +82,12 @@ export default function WallPage() {
     return wall.createdBy === currentUser.uid || isSuperAdmin;
   }, [currentUser, wall, isSuperAdmin]);
 
-  const sortedProblems = useMemo(() => {
-    const items = [...problems];
+  const filteredAndSortedProblems = useMemo(() => {
+    let items = [...problems];
+
+    if (gradeFilter !== "all") {
+      items = items.filter((problem) => problem.grade === gradeFilter);
+    }
 
     items.sort((a, b) => {
       if (sortMode === "likes") {
@@ -97,7 +102,7 @@ export default function WallPage() {
     });
 
     return items;
-  }, [problems, sortMode]);
+  }, [problems, sortMode, gradeFilter]);
 
   async function handleDeleteProblem(problemId: string) {
     try {
@@ -232,7 +237,7 @@ export default function WallPage() {
         )}
       </div>
 
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
         <label>
           <span style={{ marginRight: 8 }}>Trier par</span>
           <select
@@ -245,6 +250,26 @@ export default function WallPage() {
             <option value="views">Plus vus</option>
           </select>
         </label>
+
+        <label>
+          <span style={{ marginRight: 8 }}>Filtrer par cotation</span>
+          <select
+            value={gradeFilter}
+            onChange={(e) =>
+              setGradeFilter(e.target.value as "all" | ProblemGradeColor)
+            }
+            style={{ padding: 8, borderRadius: 8 }}
+          >
+            <option value="all">Toutes</option>
+            <option value="blanc">Blanc</option>
+            <option value="vert">Vert</option>
+            <option value="bleu">Bleu</option>
+            <option value="rose">Rose</option>
+            <option value="orange">Orange</option>
+            <option value="jaune">Jaune</option>
+            <option value="noir">Noir</option>
+          </select>
+        </label>
       </div>
 
       {isLoading && <p>Chargement des blocs...</p>}
@@ -254,8 +279,12 @@ export default function WallPage() {
         <p>Aucun bloc publié dans cette salle pour le moment.</p>
       )}
 
+      {!isLoading && !error && problems.length > 0 && filteredAndSortedProblems.length === 0 && (
+        <p>Aucun bloc ne correspond à ce filtre.</p>
+      )}
+
       <div style={{ display: "grid", gap: 10 }}>
-        {sortedProblems.map((problem) => {
+        {filteredAndSortedProblems.map((problem) => {
           const canManageProblem =
             !!currentUser &&
             (problem.authorId === currentUser.uid || isSuperAdmin);

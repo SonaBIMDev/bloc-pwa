@@ -254,13 +254,19 @@ export default function ProblemDetailPage() {
   return (
     <div>
       <div
-        style={{
-          display: "flex",
-          gap: 10,
-          flexWrap: "wrap",
-          marginBottom: 16
-        }}
-      >
+          style={{
+            position: "sticky",
+            top: 62,
+            zIndex: 50,
+            display: "flex",
+            gap: 10,
+            flexWrap: "wrap",
+            marginBottom: 16,
+            padding: "10px 0",
+            background: "#000000",
+            borderBottom: "1px solid #1a1a1a"
+          }}
+        >
         <button
           type="button"
           onClick={() => navigate(`/walls/${problem.wallId}`)}
