@@ -1,10 +1,9 @@
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const FEEDBACK_FORM_URL = "https://forms.gle/57xe9oEi2Zpvqht16";
 
 export default function BottomNav() {
   const navigate = useNavigate();
-  const location = useLocation();
 
   async function handleShareApp() {
     const shareData = {
@@ -30,8 +29,6 @@ export default function BottomNav() {
   function handleFeedback() {
     window.open(FEEDBACK_FORM_URL, "_blank", "noopener,noreferrer");
   }
-
-  const isHome = location.pathname === "/";
 
   return (
     <nav
