@@ -99,13 +99,15 @@ useEffect(() => {
     };
   }, [hasNewVersion, latestVersion, latestVersionMessage, currentUser]);
 
-  const displayNotifications = useMemo(() => {
-    const items = [...notifications];
-    if (versionNotification) {
-      return [versionNotification, ...items];
-    }
-    return items;
-  }, [notifications, versionNotification]);
+const displayNotifications = useMemo(() => {
+  const unreadItems = notifications.filter((item) => !item.isRead);
+
+  if (versionNotification) {
+    return [versionNotification, ...unreadItems];
+  }
+
+  return unreadItems;
+}, [notifications, versionNotification]);
 
   async function handleOpenNotification(notification: AppNotification) {
     if (notification.type === "new_version") {

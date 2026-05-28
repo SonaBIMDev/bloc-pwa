@@ -44,26 +44,36 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    async function loadHeaderState() {
-      try {
-        const versionInfo = await getLatestAppVersionInfo();
-        setLatestVersion(versionInfo?.latestVersion || "");
+useEffect(() => {
+  async function loadHeaderState() {
+    try {
+      const versionInfo = await getLatestAppVersionInfo();
+      setLatestVersion(versionInfo?.latestVersion || "");
 
-        if (!user) {
-          setUnreadCount(0);
-          return;
-        }
-
-        const count = await getUnreadNotificationsCountByUserId(user.uid);
-        setUnreadCount(count);
-      } catch (error) {
-        console.error("Erreur chargement header :", error);
+      if (!user) {
+        setUnreadCount(0);
+        return;
       }
-    }
 
+      const count = await getUnreadNotificationsCountByUserId(user.uid);
+      setUnreadCount(count);
+    } catch (error) {
+      console.error("Erreur chargement header :", error);
+    }
+  }
+
+  loadHeaderState();
+
+  function handleFocus() {
     loadHeaderState();
-  }, [user]);
+  }
+
+  window.addEventListener("focus", handleFocus);
+
+  return () => {
+    window.removeEventListener("focus", handleFocus);
+  };
+}, [user]);
 
   const hasNewVersion = useMemo(() => {
     if (!latestVersion) return false;
