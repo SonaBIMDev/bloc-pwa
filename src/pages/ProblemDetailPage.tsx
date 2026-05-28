@@ -111,7 +111,13 @@ export default function ProblemDetailPage() {
         await loadComments(problemId);
       } catch (err) {
         console.error(err);
-        setError("Erreur lors du chargement du bloc.");
+        console.error("Erreur ProblemDetailPage :", err);
+
+        setError(
+          err instanceof Error
+            ? `Erreur bloc: ${err.message}`
+            : "Erreur lors du chargement du bloc."
+        );
       } finally {
         setIsLoading(false);
       }
