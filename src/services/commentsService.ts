@@ -60,6 +60,7 @@ export async function createComment(input: CreateCommentInput) {
 
     if (problem.wallId) {
       const subscriptions = await getSubscriptionsByWallId(problem.wallId);
+      console.log("Abonnements trouvés pour la salle :", subscriptions);
 
       subscriptions.forEach((subscription) => {
         if (subscription.userId) {
