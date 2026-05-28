@@ -194,7 +194,7 @@ export default function ProblemDetailPage() {
     }
   }
 
-  async function handleAddComment() {
+async function handleAddComment() {
   if (!problemId) return;
 
   if (!commentText.trim()) {
@@ -212,6 +212,8 @@ export default function ProblemDetailPage() {
       return;
     }
 
+    console.log("Début création commentaire");
+
     await createComment({
       problemId,
       authorId: user.uid,
@@ -219,6 +221,8 @@ export default function ProblemDetailPage() {
       authorPhotoURL: user.photoURL || user.providerData[0]?.photoURL || "",
       text: commentText.trim()
     });
+
+    console.log("Commentaire créé côté page");
 
     setCommentText("");
 
@@ -232,13 +236,19 @@ export default function ProblemDetailPage() {
     );
 
     try {
+      console.log("Rechargement commentaires...");
       await loadComments(problemId);
+      console.log("Commentaires rechargés");
     } catch (reloadError) {
       console.error("Erreur rechargement commentaires :", reloadError);
     }
   } catch (err) {
     console.error("Erreur création commentaire :", err);
-    alert("Impossible d'ajouter le commentaire.");
+    alert(
+      err instanceof Error
+        ? `Impossible d'ajouter le commentaire : ${err.message}`
+        : "Impossible d'ajouter le commentaire."
+    );
   } finally {
     setIsSubmittingComment(false);
   }
