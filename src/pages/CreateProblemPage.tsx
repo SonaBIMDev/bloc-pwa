@@ -43,38 +43,38 @@ export default function CreateProblemPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [markerSize, setMarkerSize] = useState(18);
 
-const holdColor = useMemo<Record<HoldType, string>>(
-  () => ({
-    start: "#22c55e",
-    inter: "#38bdf8",
-    hand: "#38bdf8",
-    foot: "#38bdf8",
-    top: "#ef4444"
-  }),
-  []
-);
+  const holdColor = useMemo<Record<HoldType, string>>(
+    () => ({
+      start: "#22c55e",
+      inter: "#38bdf8",
+      hand: "#38bdf8",
+      foot: "#38bdf8",
+      top: "#ef4444"
+    }),
+    []
+  );
 
-async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-  const file = e.target.files?.[0];
-  if (!file) return;
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  try {
-    const compressedFile = await compressImage(file, {
-      maxWidth: 1600,
-      maxHeight: 1600,
-      quality: 0.78,
-      mimeType: "image/jpeg"
-    });
+    try {
+      const compressedFile = await compressImage(file, {
+        maxWidth: 1600,
+        maxHeight: 1600,
+        quality: 0.78,
+        mimeType: "image/jpeg"
+      });
 
-    const localUrl = URL.createObjectURL(compressedFile);
-    setImageUrl(localUrl);
-    setImageFile(compressedFile);
-    setHolds([]);
-  } catch (error) {
-    console.error("Erreur compression image :", error);
-    alert("Impossible de préparer l'image.");
+      const localUrl = URL.createObjectURL(compressedFile);
+      setImageUrl(localUrl);
+      setImageFile(compressedFile);
+      setHolds([]);
+    } catch (error) {
+      console.error("Erreur compression image :", error);
+      alert("Impossible de préparer l'image.");
+    }
   }
-}
 
   function handleImageClick(e: React.MouseEvent<HTMLDivElement>) {
     if (!imageRef.current) return;
@@ -118,10 +118,11 @@ async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
 
       const user = await requireGoogleUser();
 
-    if (!user) {
-    alert("Tu dois te connecter avec Google pour publier un bloc.");
-    return;
-    }
+      if (!user) {
+        alert("Tu dois te connecter avec Google pour publier un bloc.");
+        return;
+      }
+
       const uploadedImageUrl = await uploadProblemImage(imageFile, wallId, user.uid);
 
       const problemId = await createProblem({
@@ -139,18 +140,20 @@ async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
 
       const subscriptions = await getSubscriptionsByWallId(wallId);
 
-      for (const subscription of subscriptions) {
-        if (subscription.userId === user.uid) continue;
-
-        await createNotification({
-          userId: subscription.userId,
-          type: "new_problem",
-          title: "Nouveau bloc publié",
-          message: `${user.displayName || "Un grimpeur"} a publié "${name.trim()}"`,
-          wallId,
-          problemId
-        });
-      }
+      await Promise.all(
+        subscriptions
+          .filter((subscription) => subscription.userId !== user.uid)
+          .map((subscription) =>
+            createNotification({
+              userId: subscription.userId,
+              type: "new_problem",
+              title: "Nouveau bloc publié",
+              message: `${user.displayName || "Un grimpeur"} a publié "${name.trim()}"`,
+              wallId,
+              problemId
+            })
+          )
+      );
 
       navigate(`/problems/${problemId}`);
     } catch (error) {
@@ -176,44 +179,44 @@ async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         />
 
         <div>
-  <div style={{ marginBottom: 8 }}>Couleur proposée par le créateur</div>
+          <div style={{ marginBottom: 8 }}>Couleur proposée par le créateur</div>
 
-  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-    {gradeColors.map((gradeItem) => {
-      const isSelected = grade === gradeItem;
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {gradeColors.map((gradeItem) => {
+              const isSelected = grade === gradeItem;
 
-      return (
-        <button
-          key={gradeItem}
-          type="button"
-          onClick={() => setGrade(gradeItem)}
-          style={{
-            padding: "10px 14px",
-            borderRadius: 999,
-            background: gradeColorMap[gradeItem],
-            color: gradeItem === "blanc" || gradeItem === "jaune" ? "#111" : "white",
-            border: isSelected
-              ? "3px solid white"
-              : gradeItem === "blanc"
-              ? "1px solid #cbd5e1"
-              : "1px solid transparent",
-            fontWeight: 700,
-            cursor: "pointer",
-            boxShadow: isSelected ? "0 0 0 2px rgba(255,255,255,0.25)" : "none",
-            transform: isSelected ? "scale(1.05)" : "scale(1)",
-            transition: "all 0.15s ease"
-          }}
-        >
-          {gradeItem}
-        </button>
-      );
-    })}
-  </div>
+              return (
+                <button
+                  key={gradeItem}
+                  type="button"
+                  onClick={() => setGrade(gradeItem)}
+                  style={{
+                    padding: "10px 14px",
+                    borderRadius: 999,
+                    background: gradeColorMap[gradeItem],
+                    color: gradeItem === "blanc" || gradeItem === "jaune" ? "#111" : "white",
+                    border: isSelected
+                      ? "3px solid white"
+                      : gradeItem === "blanc"
+                      ? "1px solid #cbd5e1"
+                      : "1px solid transparent",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    boxShadow: isSelected ? "0 0 0 2px rgba(255,255,255,0.25)" : "none",
+                    transform: isSelected ? "scale(1.05)" : "scale(1)",
+                    transition: "all 0.15s ease"
+                  }}
+                >
+                  {gradeItem}
+                </button>
+              );
+            })}
+          </div>
 
-  <p style={{ marginTop: 10 }}>
-    <strong>Cotation sélectionnée :</strong> {grade}
-  </p>
-</div>
+          <p style={{ marginTop: 10 }}>
+            <strong>Cotation sélectionnée :</strong> {grade}
+          </p>
+        </div>
 
         <textarea
           placeholder="Description"
@@ -274,7 +277,7 @@ async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
           onChange={(e) => setMarkerSize(Number(e.target.value))}
           style={{ width: "100%" }}
         />
-    </div>
+      </div>
 
       {imageUrl ? (
         <div
@@ -294,24 +297,24 @@ async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
             style={{ width: "100%", display: "block", borderRadius: 12 }}
           />
 
-         {holds.map((hold, index) => (
-          <div
-            key={index}
-            title={`${hold.type} (${index + 1})`}
-            style={{
-              position: "absolute",
-              left: `${hold.x * 100}%`,
-              top: `${hold.y * 100}%`,
-              width: markerSize,
-              height: markerSize,
-              borderRadius: "50%",
-              background: "transparent",
-              border: `3px solid ${holdColor[hold.type]}`,
-              boxShadow: "0 0 0 1px rgba(255,255,255,0.35)",
-              transform: "translate(-50%, -50%)"
-            }}
-          />
-))}
+          {holds.map((hold, index) => (
+            <div
+              key={index}
+              title={`${hold.type} (${index + 1})`}
+              style={{
+                position: "absolute",
+                left: `${hold.x * 100}%`,
+                top: `${hold.y * 100}%`,
+                width: markerSize,
+                height: markerSize,
+                borderRadius: "50%",
+                background: "transparent",
+                border: `3px solid ${holdColor[hold.type]}`,
+                boxShadow: "0 0 0 1px rgba(255,255,255,0.35)",
+                transform: "translate(-50%, -50%)"
+              }}
+            />
+          ))}
         </div>
       ) : (
         <p>Ajoute d’abord une photo du mur.</p>
@@ -340,6 +343,5 @@ async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
 
       <div style={{ height: 120 }} />
     </div>
-    
   );
 }

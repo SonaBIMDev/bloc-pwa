@@ -22,14 +22,17 @@ export interface WallSubscription {
   createdAt: number;
 }
 
+export type AppNotificationType = "new_problem" | "new_comment" | "new_version";
+
 export interface AppNotification {
   id?: string;
   userId: string;
-  type: "new_problem";
+  type: AppNotificationType;
   title: string;
   message: string;
   wallId?: string;
   problemId?: string;
+  version?: string;
   isRead: boolean;
   createdAt: number;
 }

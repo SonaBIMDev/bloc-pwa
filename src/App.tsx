@@ -1,16 +1,38 @@
 import { Outlet, Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { auth } from "./firebase";
 import { logout, signInWithGoogle } from "./services/authService";
 import BottomNav from "./components/BottomNav";
 import { APP_NAME, APP_VERSION } from "./config/appInfo";
+import {
+  getLatestAppVersionInfo,
+  getUnreadNotificationsCountByUserId
+} from "./services/notificationsService";
+
+function compareVersions(currentVersion: string, latestVersion: string) {
+  const currentParts = currentVersion.split(".").map((item) => Number(item));
+  const latestParts = latestVersion.split(".").map((item) => Number(item));
+  const maxLength = Math.max(currentParts.length, latestParts.length);
+
+  for (let i = 0; i < maxLength; i += 1) {
+    const current = currentParts[i] || 0;
+    const latest = latestParts[i] || 0;
+
+    if (latest > current) return -1;
+    if (latest < current) return 1;
+  }
+
+  return 0;
+}
 
 export default function App() {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [latestVersion, setLatestVersion] = useState("");
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (nextUser) => {
@@ -20,6 +42,30 @@ export default function App() {
 
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    async function loadHeaderState() {
+      const versionInfo = await getLatestAppVersionInfo();
+      setLatestVersion(versionInfo?.latestVersion || "");
+
+      if (!user) {
+        setUnreadCount(0);
+        return;
+      }
+
+      const count = await getUnreadNotificationsCountByUserId(user.uid);
+      setUnreadCount(count);
+    }
+
+    loadHeaderState();
+  }, [user]);
+
+  const hasNewVersion = useMemo(() => {
+    if (!latestVersion) return false;
+    return compareVersions(APP_VERSION, latestVersion) < 0;
+  }, [latestVersion]);
+
+  const totalBadgeCount = unreadCount + (hasNewVersion ? 1 : 0);
 
   async function handleGoogleSignIn() {
     try {
@@ -85,6 +131,46 @@ export default function App() {
         </Link>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <button
+            type="button"
+            onClick={() => navigate("/notifications")}
+            style={{
+              position: "relative",
+              padding: "8px 10px",
+              borderRadius: 8,
+              border: "1px solid #2a2a2a",
+              background: "#111111",
+              color: "white",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              cursor: "pointer"
+            }}
+          >
+            Notifications
+            {totalBadgeCount > 0 && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: -6,
+                  right: -6,
+                  minWidth: 18,
+                  height: 18,
+                  borderRadius: 999,
+                  background: "#ef4444",
+                  color: "white",
+                  fontSize: 11,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "0 5px",
+                  boxSizing: "border-box"
+                }}
+              >
+                {totalBadgeCount}
+              </span>
+            )}
+          </button>
+
           {isAuthLoading ? (
             <span style={{ fontSize: 12, opacity: 0.8 }}>Chargement...</span>
           ) : user ? (

@@ -7,10 +7,12 @@ import {
   where,
   updateDoc,
   doc,
-  increment
+  increment,
+  getDoc
 } from "firebase/firestore";
 import { db } from "../firebase";
-import type { ProblemComment } from "../types";
+import type { ProblemComment, Problem } from "../types";
+import { createNotification } from "./notificationsService";
 
 interface CreateCommentInput {
   problemId: string;
@@ -34,6 +36,26 @@ export async function createComment(input: CreateCommentInput) {
   await updateDoc(problemRef, {
     commentsCount: increment(1)
   });
+
+  const problemSnapshot = await getDoc(problemRef);
+
+  if (problemSnapshot.exists()) {
+    const problem = {
+      id: problemSnapshot.id,
+      ...(problemSnapshot.data() as Omit<Problem, "id">)
+    };
+
+    if (problem.authorId && problem.authorId !== input.authorId) {
+      await createNotification({
+        userId: problem.authorId,
+        type: "new_comment",
+        title: "Nouveau commentaire",
+        message: `${input.authorName} a commenté ton bloc "${problem.name}"`,
+        wallId: problem.wallId,
+        problemId: input.problemId
+      });
+    }
+  }
 
   return docRef.id;
 }

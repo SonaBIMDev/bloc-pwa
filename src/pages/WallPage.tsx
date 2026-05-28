@@ -72,7 +72,6 @@ export default function WallPage() {
         setWall(wallData);
         setProblems(problemsData);
       } catch (err) {
-        console.error(err);
         console.error("Erreur WallPage :", err);
         setError(
           err instanceof Error

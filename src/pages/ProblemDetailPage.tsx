@@ -11,6 +11,9 @@ import {
   hasUserLikedProblem
 } from "../services/problemsService";
 import { createComment, getCommentsByProblemId } from "../services/commentsService";
+import {
+  markNotificationsAsReadForProblem
+} from "../services/notificationsService";
 import { requireGoogleUser, isCurrentUserAdmin } from "../services/authService";
 import type {
   HoldType,
@@ -74,9 +77,7 @@ export default function ProblemDetailPage() {
   );
 
   const canManageProblem = useMemo(() => {
-    if (!problem) return false;
-    if (!currentUser) return false;
-
+    if (!problem || !currentUser) return false;
     return problem.authorId === currentUser.uid || isAdmin;
   }, [problem, currentUser, isAdmin]);
 
@@ -100,19 +101,22 @@ export default function ProblemDetailPage() {
           return;
         }
 
-        await incrementProblemViews(problemId);
+        let updatedProblem = data;
 
-        const updatedProblem = {
-          ...data,
-          viewsCount: (data.viewsCount || 0) + 1
-        };
+        try {
+          await incrementProblemViews(problemId);
+          updatedProblem = {
+            ...data,
+            viewsCount: (data.viewsCount || 0) + 1
+          };
+        } catch (viewError) {
+          console.error("Impossible d'incrémenter les vues :", viewError);
+        }
 
         setProblem(updatedProblem);
         await loadComments(problemId);
       } catch (err) {
-        console.error(err);
         console.error("Erreur ProblemDetailPage :", err);
-
         setError(
           err instanceof Error
             ? `Erreur bloc: ${err.message}`
@@ -137,49 +141,58 @@ export default function ProblemDetailPage() {
     checkLiked();
   }, [problemId, currentUser]);
 
+  useEffect(() => {
+    async function markRelatedNotifications() {
+      if (!currentUser || !problemId) return;
+      await markNotificationsAsReadForProblem(currentUser.uid, problemId);
+    }
+
+    markRelatedNotifications();
+  }, [currentUser, problemId]);
+
   async function handleLikeProblem() {
-  try {
-    if (!problemId) return;
+    try {
+      if (!problemId) return;
 
-    if (!currentUser) {
-      alert("Connecte-toi pour liker un bloc.");
-      return;
+      if (!currentUser) {
+        alert("Connecte-toi pour liker un bloc.");
+        return;
+      }
+
+      setIsLiking(true);
+
+      if (hasLiked) {
+        await unlikeProblem(problemId, currentUser.uid);
+        setHasLiked(false);
+
+        setProblem((prev) =>
+          prev
+            ? {
+                ...prev,
+                likesCount: Math.max((prev.likesCount || 0) - 1, 0)
+              }
+            : prev
+        );
+      } else {
+        await likeProblem(problemId, currentUser.uid);
+        setHasLiked(true);
+
+        setProblem((prev) =>
+          prev
+            ? {
+                ...prev,
+                likesCount: (prev.likesCount || 0) + 1
+              }
+            : prev
+        );
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Impossible de mettre à jour le like.");
+    } finally {
+      setIsLiking(false);
     }
-
-    setIsLiking(true);
-
-    if (hasLiked) {
-      await unlikeProblem(problemId, currentUser.uid);
-      setHasLiked(false);
-
-      setProblem((prev) =>
-        prev
-          ? {
-              ...prev,
-              likesCount: Math.max((prev.likesCount || 0) - 1, 0)
-            }
-          : prev
-      );
-    } else {
-      await likeProblem(problemId, currentUser.uid);
-      setHasLiked(true);
-
-      setProblem((prev) =>
-        prev
-          ? {
-              ...prev,
-              likesCount: (prev.likesCount || 0) + 1
-            }
-          : prev
-      );
-    }
-  } catch (error) {
-    console.error(error);
-    alert("Impossible de mettre à jour le like.");
-  } finally {
-    setIsLiking(false);
   }
-}
 
   async function handleAddComment() {
     try {
@@ -208,6 +221,14 @@ export default function ProblemDetailPage() {
       });
 
       setCommentText("");
+      setProblem((prev) =>
+        prev
+          ? {
+              ...prev,
+              commentsCount: (prev.commentsCount || 0) + 1
+            }
+          : prev
+      );
       await loadComments(problemId);
     } catch (err) {
       console.error(err);
@@ -260,19 +281,19 @@ export default function ProblemDetailPage() {
   return (
     <div>
       <div
-          style={{
-            position: "sticky",
-            top: 62,
-            zIndex: 50,
-            display: "flex",
-            gap: 10,
-            flexWrap: "wrap",
-            marginBottom: 16,
-            padding: "10px 0",
-            background: "#000000",
-            borderBottom: "1px solid #1a1a1a"
-          }}
-        >
+        style={{
+          position: "sticky",
+          top: 62,
+          zIndex: 50,
+          display: "flex",
+          gap: 10,
+          flexWrap: "wrap",
+          marginBottom: 16,
+          padding: "10px 0",
+          background: "#000000",
+          borderBottom: "1px solid #1a1a1a"
+        }}
+      >
         <button
           type="button"
           onClick={() => navigate(`/walls/${problem.wallId}`)}
@@ -316,7 +337,7 @@ export default function ProblemDetailPage() {
               style={{
                 padding: "10px 14px",
                 borderRadius: 8,
-                border: "none",
+                border: "1px solid #222222",
                 background: "#ffffff",
                 color: "#000000",
                 opacity: isDeleting ? 0.6 : 1,
@@ -441,6 +462,7 @@ export default function ProblemDetailPage() {
       <div style={{ marginTop: 16 }}>
         <p
           style={{
+            margin: 0,
             color: "#ffffff",
             display: "flex",
             alignItems: "center",
@@ -464,6 +486,15 @@ export default function ProblemDetailPage() {
               style={{ width: 16, height: 16, display: "block" }}
             />
             {problem.likesCount || 0}
+          </span>
+
+          <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <img
+              src="/icons/comments.png"
+              alt="Commentaires"
+              style={{ width: 16, height: 16, display: "block" }}
+            />
+            {problem.commentsCount || 0}
           </span>
         </p>
       </div>
@@ -489,10 +520,11 @@ export default function ProblemDetailPage() {
                 padding: "12px 16px",
                 borderRadius: 10,
                 border: "none",
-                background: isSubmittingComment ? "#64748b" : "#38bdf8",
-                color: "#082f49",
+                background: "#ffffff",
+                color: "#000000",
                 fontWeight: 700,
-                cursor: isSubmittingComment ? "not-allowed" : "pointer"
+                cursor: isSubmittingComment ? "not-allowed" : "pointer",
+                opacity: isSubmittingComment ? 0.6 : 1
               }}
             >
               {isSubmittingComment ? "Envoi..." : "Ajouter un commentaire"}
