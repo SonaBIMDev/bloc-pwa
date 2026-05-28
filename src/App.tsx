@@ -131,45 +131,52 @@ export default function App() {
         </Link>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-          <button
-            type="button"
-            onClick={() => navigate("/notifications")}
-            style={{
-              position: "relative",
-              padding: "8px 10px",
-              borderRadius: 8,
-              border: "1px solid #2a2a2a",
-              background: "#111111",
-              color: "white",
-              fontWeight: 700,
-              textTransform: "uppercase",
-              cursor: "pointer"
-            }}
-          >
-            Notifications
-            {totalBadgeCount > 0 && (
-              <span
-                style={{
-                  position: "absolute",
-                  top: -6,
-                  right: -6,
-                  minWidth: 18,
-                  height: 18,
-                  borderRadius: 999,
-                  background: "#ef4444",
-                  color: "white",
-                  fontSize: 11,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: "0 5px",
-                  boxSizing: "border-box"
-                }}
-              >
-                {totalBadgeCount}
-              </span>
-            )}
-          </button>
+        <button
+          type="button"
+          onClick={() => navigate("/notifications")}
+          style={{
+            position: "relative",
+            width: 42,
+            height: 42,
+            borderRadius: 10,
+            border: "1px solid #2a2a2a",
+            background: "#111111",
+            color: "white",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0
+          }}
+          aria-label="Notifications"
+          title="Notifications"
+        >
+          <span style={{ fontSize: 20, lineHeight: 1 }}>🔔</span>
+
+          {totalBadgeCount > 0 && (
+            <span
+              style={{
+                position: "absolute",
+                top: -5,
+                right: -5,
+                minWidth: 18,
+                height: 18,
+                borderRadius: 999,
+                background: "#ef4444",
+                color: "white",
+                fontSize: 11,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "0 5px",
+                boxSizing: "border-box",
+                fontWeight: 700
+              }}
+            >
+              {totalBadgeCount}
+            </span>
+          )}
+        </button>
 
           {isAuthLoading ? (
             <span style={{ fontSize: 12, opacity: 0.8 }}>Chargement...</span>
@@ -209,6 +216,53 @@ export default function App() {
                 }}
               >
                 Déconnexion
+              </button>
+
+              <button
+                type="button"
+                onClick={() => navigate("/notifications")}
+                style={{
+                  position: "relative",
+                  width: 42,
+                  height: 42,
+                  borderRadius: 10,
+                  border: "1px solid #2a2a2a",
+                  background: "#111111",
+                  color: "white",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0
+                }}
+                aria-label="Notifications"
+                title="Notifications"
+              >
+                <span style={{ fontSize: 20, lineHeight: 1 }}>🔔</span>
+
+                {totalBadgeCount > 0 && (
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: -5,
+                      right: -5,
+                      minWidth: 18,
+                      height: 18,
+                      borderRadius: 999,
+                      background: "#ef4444",
+                      color: "white",
+                      fontSize: 11,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "0 5px",
+                      boxSizing: "border-box",
+                      fontWeight: 700
+                    }}
+                  >
+                    {totalBadgeCount}
+                  </span>
+                )}
               </button>
             </>
           ) : (
