@@ -13,6 +13,7 @@ import {
 import { db } from "../firebase";
 import type { ProblemComment, Problem } from "../types";
 import { createNotification } from "./notificationsService";
+import { getSubscriptionsByWallId } from "./subscriptionsService";
 
 interface CreateCommentInput {
   problemId: string;
@@ -32,10 +33,14 @@ export async function createComment(input: CreateCommentInput) {
     createdAt: Date.now()
   });
 
+  console.log("Commentaire créé :", docRef.id);
+
   const problemRef = doc(db, "problems", input.problemId);
   await updateDoc(problemRef, {
     commentsCount: increment(1)
   });
+
+  console.log("commentsCount incrémenté pour problemId =", input.problemId);
 
   const problemSnapshot = await getDoc(problemRef);
 
@@ -45,16 +50,53 @@ export async function createComment(input: CreateCommentInput) {
       ...(problemSnapshot.data() as Omit<Problem, "id">)
     };
 
-    if (problem.authorId && problem.authorId !== input.authorId) {
-      await createNotification({
-        userId: problem.authorId,
-        type: "new_comment",
-        title: "Nouveau commentaire",
-        message: `${input.authorName} a commenté ton bloc "${problem.name}"`,
-        wallId: problem.wallId,
-        problemId: input.problemId
+    console.log("Bloc chargé pour notification :", problem);
+
+    const targetUserIds = new Set<string>();
+
+    if (problem.authorId) {
+      targetUserIds.add(problem.authorId);
+    }
+
+    if (problem.wallId) {
+      const subscriptions = await getSubscriptionsByWallId(problem.wallId);
+
+      subscriptions.forEach((subscription) => {
+        if (subscription.userId) {
+          targetUserIds.add(subscription.userId);
+        }
       });
     }
+
+    targetUserIds.delete(input.authorId);
+
+    console.log("Destinataires notification commentaire :", [...targetUserIds]);
+
+    await Promise.all(
+      [...targetUserIds].map(async (userId) => {
+        try {
+          const notificationId = await createNotification({
+            userId,
+            type: "new_comment",
+            title: "Nouveau commentaire",
+            message: `${input.authorName} a commenté le bloc "${problem.name}"`,
+            wallId: problem.wallId,
+            problemId: input.problemId
+          });
+
+          console.log("Notification commentaire créée :", notificationId, "pour", userId);
+        } catch (notificationError) {
+          console.error(
+            "Erreur création notification commentaire pour",
+            userId,
+            ":",
+            notificationError
+          );
+        }
+      })
+    );
+  } else {
+    console.warn("Impossible de charger le bloc pour créer la notification");
   }
 
   return docRef.id;
