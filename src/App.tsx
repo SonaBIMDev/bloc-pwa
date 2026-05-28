@@ -28,6 +28,7 @@ function compareVersions(currentVersion: string, latestVersion: string) {
 
 export default function App() {
   const navigate = useNavigate();
+
   const [user, setUser] = useState<User | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [isSigningIn, setIsSigningIn] = useState(false);
@@ -45,16 +46,20 @@ export default function App() {
 
   useEffect(() => {
     async function loadHeaderState() {
-      const versionInfo = await getLatestAppVersionInfo();
-      setLatestVersion(versionInfo?.latestVersion || "");
+      try {
+        const versionInfo = await getLatestAppVersionInfo();
+        setLatestVersion(versionInfo?.latestVersion || "");
 
-      if (!user) {
-        setUnreadCount(0);
-        return;
+        if (!user) {
+          setUnreadCount(0);
+          return;
+        }
+
+        const count = await getUnreadNotificationsCountByUserId(user.uid);
+        setUnreadCount(count);
+      } catch (error) {
+        console.error("Erreur chargement header :", error);
       }
-
-      const count = await getUnreadNotificationsCountByUserId(user.uid);
-      setUnreadCount(count);
     }
 
     loadHeaderState();
@@ -109,7 +114,8 @@ export default function App() {
           to="/"
           style={{
             color: "white",
-            textDecoration: "none"
+            textDecoration: "none",
+            flexShrink: 0
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
@@ -130,54 +136,15 @@ export default function App() {
           </div>
         </Link>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-        <button
-          type="button"
-          onClick={() => navigate("/notifications")}
+        <div
           style={{
-            position: "relative",
-            width: 42,
-            height: 42,
-            borderRadius: 10,
-            border: "1px solid #2a2a2a",
-            background: "#111111",
-            color: "white",
-            cursor: "pointer",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0
+            gap: 10,
+            flexWrap: "wrap",
+            justifyContent: "flex-end"
           }}
-          aria-label="Notifications"
-          title="Notifications"
         >
-          <span style={{ fontSize: 20, lineHeight: 1 }}>🔔</span>
-
-          {totalBadgeCount > 0 && (
-            <span
-              style={{
-                position: "absolute",
-                top: -5,
-                right: -5,
-                minWidth: 18,
-                height: 18,
-                borderRadius: 999,
-                background: "#ef4444",
-                color: "white",
-                fontSize: 11,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "0 5px",
-                boxSizing: "border-box",
-                fontWeight: 700
-              }}
-            >
-              {totalBadgeCount}
-            </span>
-          )}
-        </button>
-
           {isAuthLoading ? (
             <span style={{ fontSize: 12, opacity: 0.8 }}>Chargement...</span>
           ) : user ? (
@@ -197,7 +164,13 @@ export default function App() {
                 />
               )}
 
-              <span style={{ fontSize: 12, opacity: 0.9, textTransform: "uppercase" }}>
+              <span
+                style={{
+                  fontSize: 11,
+                  opacity: 0.9,
+                  textTransform: "uppercase"
+                }}
+              >
                 {user.displayName || user.email || "Utilisateur"}
               </span>
 
