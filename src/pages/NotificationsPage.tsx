@@ -44,28 +44,37 @@ export default function NotificationsPage() {
   }, []);
 
   useEffect(() => {
-    async function loadPageData() {
-      try {
-        setIsLoading(true);
+  async function loadPageData() {
+    try {
+      setIsLoading(true);
 
-        const versionInfo = await getLatestAppVersionInfo();
-        setLatestVersion(versionInfo?.latestVersion || "");
-        setLatestVersionMessage(versionInfo?.message || "");
+      const versionInfo = await getLatestAppVersionInfo();
+      console.log("Version info =", versionInfo);
 
-        if (!currentUser) {
-          setNotifications([]);
-          return;
-        }
+      setLatestVersion(versionInfo?.latestVersion || "");
+      setLatestVersionMessage(versionInfo?.message || "");
 
-        const data = await getNotificationsByUserId(currentUser.uid);
-        setNotifications(data);
-      } finally {
-        setIsLoading(false);
+      if (!currentUser) {
+        console.log("Pas de currentUser dans NotificationsPage");
+        setNotifications([]);
+        return;
       }
-    }
 
-    loadPageData();
-  }, [currentUser]);
+      console.log("NotificationsPage currentUser.uid =", currentUser.uid);
+
+      const data = await getNotificationsByUserId(currentUser.uid);
+      console.log("Notifications reçues dans la page =", data);
+
+      setNotifications(data);
+    } catch (error) {
+      console.error("Erreur chargement NotificationsPage :", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  loadPageData();
+}, [currentUser]);
 
   const hasNewVersion = useMemo(() => {
     if (!latestVersion) return false;

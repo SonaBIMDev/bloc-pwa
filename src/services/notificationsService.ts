@@ -44,6 +44,8 @@ export async function createNotification(input: CreateNotificationInput) {
 }
 
 export async function getNotificationsByUserId(userId: string): Promise<AppNotification[]> {
+  console.log("Lecture notifications pour userId =", userId);
+
   const snapshot = await getDocs(
     query(
       collection(db, "notifications"),
@@ -52,10 +54,16 @@ export async function getNotificationsByUserId(userId: string): Promise<AppNotif
     )
   );
 
-  return snapshot.docs.map((docItem) => ({
+  console.log("Nombre de notifications trouvées =", snapshot.size);
+
+  const items = snapshot.docs.map((docItem) => ({
     id: docItem.id,
     ...(docItem.data() as Omit<AppNotification, "id">)
   }));
+
+  console.log("Notifications trouvées =", items);
+
+  return items;
 }
 
 export async function getUnreadNotificationsCountByUserId(userId: string) {
