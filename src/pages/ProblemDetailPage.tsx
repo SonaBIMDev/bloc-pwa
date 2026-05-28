@@ -195,48 +195,54 @@ export default function ProblemDetailPage() {
   }
 
   async function handleAddComment() {
-    try {
-      if (!problemId) return;
+  if (!problemId) return;
 
-      if (!commentText.trim()) {
-        alert("Merci de saisir un commentaire.");
-        return;
-      }
-
-      setIsSubmittingComment(true);
-
-      const user = await requireGoogleUser();
-
-      if (!user) {
-        alert("Tu dois te connecter avec Google pour commenter.");
-        return;
-      }
-
-      await createComment({
-        problemId,
-        authorId: user.uid,
-        authorName: user.displayName || user.email || "Utilisateur",
-        authorPhotoURL: user.photoURL || user.providerData[0]?.photoURL || "",
-        text: commentText.trim()
-      });
-
-      setCommentText("");
-      setProblem((prev) =>
-        prev
-          ? {
-              ...prev,
-              commentsCount: (prev.commentsCount || 0) + 1
-            }
-          : prev
-      );
-      await loadComments(problemId);
-    } catch (err) {
-      console.error(err);
-      alert("Erreur lors de l'ajout du commentaire.");
-    } finally {
-      setIsSubmittingComment(false);
-    }
+  if (!commentText.trim()) {
+    alert("Merci de saisir un commentaire.");
+    return;
   }
+
+  try {
+    setIsSubmittingComment(true);
+
+    const user = await requireGoogleUser();
+
+    if (!user) {
+      alert("Tu dois te connecter avec Google pour commenter.");
+      return;
+    }
+
+    await createComment({
+      problemId,
+      authorId: user.uid,
+      authorName: user.displayName || user.email || "Utilisateur",
+      authorPhotoURL: user.photoURL || user.providerData[0]?.photoURL || "",
+      text: commentText.trim()
+    });
+
+    setCommentText("");
+
+    setProblem((prev) =>
+      prev
+        ? {
+            ...prev,
+            commentsCount: (prev.commentsCount || 0) + 1
+          }
+        : prev
+    );
+
+    try {
+      await loadComments(problemId);
+    } catch (reloadError) {
+      console.error("Erreur rechargement commentaires :", reloadError);
+    }
+  } catch (err) {
+    console.error("Erreur création commentaire :", err);
+    alert("Impossible d'ajouter le commentaire.");
+  } finally {
+    setIsSubmittingComment(false);
+  }
+}
 
   async function handleDeleteProblem() {
     try {
