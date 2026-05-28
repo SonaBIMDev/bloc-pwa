@@ -73,7 +73,12 @@ export default function WallPage() {
         setProblems(problemsData);
       } catch (err) {
         console.error(err);
-        setError("Erreur lors du chargement de la salle.");
+        console.error("Erreur WallPage :", err);
+        setError(
+          err instanceof Error
+            ? `Erreur WallPage: ${err.message}`
+            : "Erreur lors du chargement de la salle."
+        );
       } finally {
         setIsLoading(false);
       }
