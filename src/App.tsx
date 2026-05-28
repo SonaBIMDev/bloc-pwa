@@ -68,10 +68,16 @@ useEffect(() => {
     loadHeaderState();
   }
 
+  function handleNotificationsUpdated() {
+    loadHeaderState();
+  }
+
   window.addEventListener("focus", handleFocus);
+  window.addEventListener("notifications-updated", handleNotificationsUpdated);
 
   return () => {
     window.removeEventListener("focus", handleFocus);
+    window.removeEventListener("notifications-updated", handleNotificationsUpdated);
   };
 }, [user]);
 

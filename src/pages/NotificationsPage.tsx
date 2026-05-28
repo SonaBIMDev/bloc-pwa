@@ -122,6 +122,8 @@ const displayNotifications = useMemo(() => {
           item.id === notification.id ? { ...item, isRead: true } : item
         )
       );
+
+      window.dispatchEvent(new Event("notifications-updated"));
     }
 
     if (notification.problemId) {
@@ -139,6 +141,8 @@ const displayNotifications = useMemo(() => {
 
     await markAllNotificationsAsRead(currentUser.uid);
     setNotifications((prev) => prev.map((item) => ({ ...item, isRead: true })));
+    
+    window.dispatchEvent(new Event("notifications-updated"));
   }
 
   if (!currentUser) {
