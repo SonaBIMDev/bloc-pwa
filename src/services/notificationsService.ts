@@ -4,7 +4,6 @@ import {
   doc,
   getDoc,
   getDocs,
-  orderBy,
   query,
   updateDoc,
   where
@@ -49,18 +48,18 @@ export async function getNotificationsByUserId(userId: string): Promise<AppNotif
   const snapshot = await getDocs(
     query(
       collection(db, "notifications"),
-      where("userId", "==", userId),
-      orderBy("createdAt", "desc")
+      where("userId", "==", userId)
     )
   );
-
-  console.log("Nombre de notifications trouvées =", snapshot.size);
 
   const items = snapshot.docs.map((docItem) => ({
     id: docItem.id,
     ...(docItem.data() as Omit<AppNotification, "id">)
   }));
 
+  items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+  console.log("Nombre de notifications trouvées =", items.length);
   console.log("Notifications trouvées =", items);
 
   return items;

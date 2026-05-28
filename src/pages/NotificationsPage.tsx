@@ -43,7 +43,7 @@ export default function NotificationsPage() {
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
+useEffect(() => {
   async function loadPageData() {
     try {
       setIsLoading(true);
@@ -68,6 +68,7 @@ export default function NotificationsPage() {
       setNotifications(data);
     } catch (error) {
       console.error("Erreur chargement NotificationsPage :", error);
+      setNotifications([]);
     } finally {
       setIsLoading(false);
     }
